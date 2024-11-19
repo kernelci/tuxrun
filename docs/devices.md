@@ -23,7 +23,7 @@ avh-imx93     | i.MX93         | Image  |
 
 Device                | FVP version         |OS         |
 ----------------------|---------------------|-----------|
-fvp-aemva             | RevC AEMvA 11.24.11 |           |
+fvp-aemva             | RevC AEMvA 11.28_23 |           |
 fvp-lava              | N/A                 |           |
 fvp-morello-android   | Morello 0.11.34     | Android   |
 fvp-morello-baremetal | Morello 0.11.34     | Baremetal |

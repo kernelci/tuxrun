@@ -22,7 +22,7 @@ RUN set -ex ;\
     apt install -q=2 --yes --no-install-recommends ${PKG_DEPS} ;\
     # Install the FVP model
     curl --connect-timeout 5 --retry 5 --retry-delay 1 -fsSLo /tmp/fvp.tgz \
-    "https://developer.arm.com/-/media/Files/downloads/ecosystem-models/FVP_Base_RevC-2xAEMvA_${version}_${arch}.tgz" ;\
+    "https://developer.arm.com/-/cdn-downloads/permalink/FVPs-Architecture/FM-11.28/FVP_Base_RevC-2xAEMvA_${version}_${arch}.tgz" ;\
     echo "${version_sha256} /tmp/fvp.tgz" | sha256sum --check -;\
     tar xf /tmp/fvp.tgz -C /tmp ;\
     mkdir -p /opt/model/FVP_AEMvA/ ; \
