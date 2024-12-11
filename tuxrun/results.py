@@ -98,9 +98,7 @@ class Results:
                 if "url" in v:
                     self.__metadata__["artefacts"][k] = {
                         "url": v["url"],
-                        # FIXME: The latest version of lava_dispatcher 2024.09
-                        #        does not add sha256sum for some downloads.
-                        "sha256sum": v["extra"].get("sha256sum"),
+                        "sha256sum": v["extra"]["sha256sum"],
                     }
 
         # Add test durations
