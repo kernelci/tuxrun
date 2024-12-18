@@ -25,8 +25,12 @@ def get_rootfs(
     return __download_and_cache__(rootfs or device.rootfs, progress)
 
 
-def get_test_definitions(progress: ProgressIndicator = NoProgressIndicator()):
-    return pathurlnone(__download_and_cache__(TEST_DEFINITIONS, progress))
+def get_test_definitions(
+    test_definitions: str = "", progress: ProgressIndicator = NoProgressIndicator()
+):
+    return pathurlnone(
+        __download_and_cache__(test_definitions or TEST_DEFINITIONS, progress)
+    )
 
 
 def __download_and_cache__(

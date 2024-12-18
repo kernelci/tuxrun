@@ -189,7 +189,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     test_definitions = None
     if any(t.need_test_definition for t in options.tests):
         test_definitions = get_test_definitions(
-            ProgressIndicator.get("Downloading test definitions")
+            options.test_definitions,
+            ProgressIndicator.get("Downloading test definitions"),
         )
         extra_assets.append(test_definitions)
 

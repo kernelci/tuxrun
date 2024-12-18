@@ -25,6 +25,7 @@ def filter_options(options):
         "device",
         "tuxbuild",
         "tuxmake",
+        "test_definitions",
         "timeouts",
         "runtime",
         "image",
@@ -302,6 +303,7 @@ def setup_parser() -> argparse.ArgumentParser:
         type=tuxmake_directory,
         help="directory containing a TuxMake build",
     )
+    artefact("test-definitions")
     artefact("uefi")
     group.add_argument(
         "--fvp-ubl-license",

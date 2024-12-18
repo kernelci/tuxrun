@@ -75,6 +75,40 @@ def artefacts(tmp_path):
     return tmp_path
 
 
+def definition(
+    monkeypatch, mocker, tmpdir, artefacts, args, filename, has_test_definitions_url
+):
+    monkeypatch.setattr("tuxrun.__main__.sys.argv", ["tuxrun"] + args)
+    mocker.patch("tuxrun.__main__.Runtime.select", side_effect=Exception)
+    mocker.patch("tuxrun.assets.__download_and_cache__", side_effect=lambda a, b: a)
+    if not has_test_definitions_url:
+        mocker.patch(
+            "tuxrun.__main__.get_test_definitions",
+            return_value="file://testdef.tar.zst",
+        )
+    mocker.patch("tempfile.mkdtemp", return_value=tmpdir)
+    mocker.patch("shutil.rmtree")
+
+    with pytest.raises(Exception):
+        main()
+    data = (tmpdir / "definition.yaml").read_text(encoding="utf-8")
+
+    for art in ARTEFACTS:
+        data = data.replace(f"file://{artefacts}/{art}", f"/DATA/{art}")
+    data = data.replace(
+        f'container_name: "{artefacts.name}"', 'container_name: "tuxrun-ci"'
+    )
+    data = data.replace(
+        f'network_from: "{artefacts.name}"', 'network_from: "tuxrun-ci"'
+    )
+
+    if os.environ.get("TUXRUN_RENDER"):
+        (BASE / "refs" / "definitions" / filename).write_text(data, encoding="utf-8")
+    assert data == (BASE / "refs" / "definitions" / filename).read_text(
+        encoding="utf-8"
+    )
+
+
 @pytest.mark.parametrize(
     "args,filename",
     [
@@ -2093,33 +2127,27 @@ def artefacts(tmp_path):
     ],
 )
 def test_definition(monkeypatch, mocker, tmpdir, artefacts, args, filename):
-    monkeypatch.setattr("tuxrun.__main__.sys.argv", ["tuxrun"] + args)
-    mocker.patch("tuxrun.__main__.Runtime.select", side_effect=Exception)
-    mocker.patch("tuxrun.assets.__download_and_cache__", side_effect=lambda a, b: a)
-    mocker.patch(
-        "tuxrun.__main__.get_test_definitions", return_value="file://testdef.tar.zst"
-    )
-    mocker.patch("tempfile.mkdtemp", return_value=tmpdir)
-    mocker.patch("shutil.rmtree")
+    definition(monkeypatch, mocker, tmpdir, artefacts, args, filename, False)
 
-    with pytest.raises(Exception):
-        main()
-    data = (tmpdir / "definition.yaml").read_text(encoding="utf-8")
 
-    for art in ARTEFACTS:
-        data = data.replace(f"file://{artefacts}/{art}", f"/DATA/{art}")
-    data = data.replace(
-        f'container_name: "{artefacts.name}"', 'container_name: "tuxrun-ci"'
-    )
-    data = data.replace(
-        f'network_from: "{artefacts.name}"', 'network_from: "tuxrun-ci"'
-    )
-
-    if os.environ.get("TUXRUN_RENDER"):
-        (BASE / "refs" / "definitions" / filename).write_text(data, encoding="utf-8")
-    assert data == (BASE / "refs" / "definitions" / filename).read_text(
-        encoding="utf-8"
-    )
+@pytest.mark.parametrize(
+    "args,filename",
+    [
+        (
+            [
+                "--device",
+                "qemu-arm64",
+                "--test-definitions",
+                "https://example.com/test-defintions.tar.xz",
+                "--tests",
+                "kunit",
+            ],
+            "qemu-arm64-test-definitions-2024.07.tar.yaml",
+        ),
+    ],
+)
+def test_definition_arg(monkeypatch, mocker, tmpdir, artefacts, args, filename):
+    definition(monkeypatch, mocker, tmpdir, artefacts, args, filename, True)
 
 
 def test_fvp_aemva_extra_assets(tmpdir):
