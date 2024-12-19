@@ -275,7 +275,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     extra_assets.extend(options.device.extra_assets(**def_arguments))
 
     # Use a container runtime
-    runtime = Runtime.select(options.runtime)()
+    runtime = Runtime.select(options.runtime)(options.dispatcher_download_dir)
     runtime.name(tmpdir.name)
     runtime.image(options.image)
 
@@ -345,6 +345,9 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "output",
         str(tmpdir / "definition.yaml"),
     ]
+
+    if options.dispatcher_download_dir:
+        args.append("--skip-sudo-warning")
 
     results = Results(options.tests, artefacts)
     hacking_session = bool("hacking-session" in t.name for t in options.tests)

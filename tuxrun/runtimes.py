@@ -23,7 +23,8 @@ class Runtime:
     container = False
     prefix = [""]
 
-    def __init__(self):
+    def __init__(self, dispatcher_download_dir):
+        self.dispatcher_download_dir = dispatcher_download_dir
         self.__bindings__ = []
         self.__image__ = None
         self.__name__ = None
@@ -105,8 +106,8 @@ class ContainerRuntime(Runtime):
     bind_guestfs = True
     container = True
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, dispatcher_download_dir):
+        super().__init__(dispatcher_download_dir)
         self.bind("/boot", ro=True)
         self.bind("/lib/modules", ro=True)
         # Bind /dev/kvm is available
@@ -194,6 +195,7 @@ class PodmanRuntime(ContainerRuntime):
                 runtime="podman",
                 volume=str(tmpdir / "dispatcher" / "tmp"),
                 network=self.network,
+                dispatcher_download_dir=self.dispatcher_download_dir,
             )
         )
         LOG.debug("docker wrapper")

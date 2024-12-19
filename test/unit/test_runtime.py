@@ -13,16 +13,16 @@ def test_select():
     assert Runtime.select("podman") == PodmanRuntime
 
 
-def test_cmd_null():
-    runtime = Runtime.select("null")()
+def test_cmd_null(tmp_path):
+    runtime = Runtime.select("null")(tmp_path)
     assert runtime.cmd(["hello", "world"]) == ["hello", "world"]
 
     runtime.bind("/hello/world")
     assert runtime.cmd(["hello", "world"]) == ["hello", "world"]
 
 
-def test_cmd_podman():
-    runtime = Runtime.select("podman")()
+def test_cmd_podman(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.name("name")
     runtime.image("image")
     args = [
@@ -71,8 +71,8 @@ def test_cmd_podman():
     ]
 
 
-def test_kill_null(mocker):
-    runtime = Runtime.select("null")()
+def test_kill_null(mocker, tmp_path):
+    runtime = Runtime.select("null")(tmp_path)
     runtime.__proc__ = None
     runtime.kill()
 
@@ -81,9 +81,9 @@ def test_kill_null(mocker):
     runtime.__proc__.send_signal.assert_called_once_with(15)
 
 
-def test_kill_podman(mocker):
+def test_kill_podman(mocker, tmp_path):
     popen = mocker.patch("subprocess.Popen")
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.kill()
     popen.assert_called_once_with(
         ["podman", "stop", "--time", "60", None],
@@ -94,9 +94,9 @@ def test_kill_podman(mocker):
     assert len(runtime.__sub_procs__) == 1
 
 
-def test_kill_podman_raise(mocker):
+def test_kill_podman_raise(mocker, tmp_path):
     popen = mocker.patch("subprocess.Popen", side_effect=FileNotFoundError)
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.kill()
     popen.assert_called_once_with(
         ["podman", "stop", "--time", "60", None],
@@ -108,7 +108,7 @@ def test_kill_podman_raise(mocker):
 
 
 def test_pre_run_docker(tmp_path):
-    runtime = Runtime.select("docker")()
+    runtime = Runtime.select("docker")(tmp_path)
     runtime.pre_run(tmp_path)
     assert runtime.__bindings__[-1] == (
         "/var/run/docker.sock",
@@ -118,8 +118,8 @@ def test_pre_run_docker(tmp_path):
     )
 
 
-def test_pre_run_null():
-    runtime = Runtime.select("null")()
+def test_pre_run_null(tmp_path):
+    runtime = Runtime.select("null")(tmp_path)
     runtime.pre_run(None)
 
 
@@ -128,7 +128,7 @@ def test_pre_run_podman(mocker, tmp_path):
     popen = mocker.patch("subprocess.Popen")
     run = mocker.patch("subprocess.run")
 
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.pre_run(tmp_path)
     assert runtime.__pre_proc__ is not None
     popen.assert_called_once()
@@ -140,7 +140,7 @@ def test_pre_run_podman_errors(mocker, tmp_path):
     run = mocker.patch("subprocess.run")
     sleep = mocker.patch("time.sleep")
 
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     with pytest.raises(Exception) as exc:
         runtime.pre_run(tmp_path)
     assert exc.match("Unable to create podman socket at ")
@@ -150,13 +150,13 @@ def test_pre_run_podman_errors(mocker, tmp_path):
     sleep.assert_called()
 
 
-def test_post_run_null():
-    runtime = Runtime.select("null")()
+def test_post_run_null(tmp_path):
+    runtime = Runtime.select("null")(tmp_path)
     runtime.post_run()
 
 
-def test_post_run_podman(mocker):
-    runtime = Runtime.select("podman")()
+def test_post_run_podman(mocker, tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.post_run()
 
     runtime.__pre_proc__ = mocker.MagicMock()
@@ -165,10 +165,10 @@ def test_post_run_podman(mocker):
     runtime.__pre_proc__.wait.assert_called_once_with()
 
 
-def test_run(mocker):
+def test_run(mocker, tmp_path):
     popen = mocker.patch("subprocess.Popen")
 
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.name("name")
     runtime.image("image")
     with runtime.run(["hello", "world"]):
@@ -181,7 +181,7 @@ def test_run(mocker):
 def test_run_errors(mocker, tmp_path):
     popen = mocker.patch("subprocess.Popen", side_effect=FileNotFoundError)
 
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.name("name")
     runtime.image("image")
     with pytest.raises(FileNotFoundError):
@@ -190,7 +190,7 @@ def test_run_errors(mocker, tmp_path):
     popen.assert_called_once()
 
     popen = mocker.patch("subprocess.Popen", side_effect=Exception)
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.name("name")
     runtime.image("image")
     with pytest.raises(Exception):
@@ -201,7 +201,7 @@ def test_run_errors(mocker, tmp_path):
     # Test duplicated source bindings
     popen = mocker.patch("subprocess.Popen", side_effect=FileNotFoundError)
 
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.name("name")
     runtime.image("image")
     runtime.bind("/hello", "/world")
@@ -213,7 +213,7 @@ def test_run_errors(mocker, tmp_path):
     popen.assert_not_called()
 
     # Test duplicated destination bindings
-    runtime = Runtime.select("podman")()
+    runtime = Runtime.select("podman")(tmp_path)
     runtime.name("name")
     runtime.image("image")
     runtime.bind("/hello", "/world")
