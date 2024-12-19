@@ -42,6 +42,7 @@ def filter_options(options):
         "results_hooks",
         "shell",
         "debug",
+        "dispatcher_download_dir",
         "lava_definition",
         "shared",
     ]
@@ -427,6 +428,12 @@ def setup_parser() -> argparse.ArgumentParser:
         default=None,
         type=Path,
         help="Change the cache directory for storing log files, default: XDG_CACHE_DIR",
+    )
+    group.add_argument(
+        "--dispatcher-download-dir",
+        default="/var/lib/lava/dispatcher/tmp",
+        type=Path,
+        help="Change the path that the dispatcher is installed to.",
     )
     group.add_argument(
         "--save-outputs",

@@ -45,19 +45,19 @@ def main():
                 skip = False
                 continue
             if sys.argv[index] in ["-v", "--volume"] and sys.argv[index + 1].startswith(
-                "/var/lib/lava/dispatcher/tmp/"
+                "{dispatcher_download_dir}"
             ):
                 skip = True
                 path = sys.argv[index + 1].replace(
-                    "/var/lib/lava/dispatcher/tmp/", VOLUME + "/"
+                    "{dispatcher_download_dir}", VOLUME + "/"
                 )
                 args.extend(["--volume", path])
             elif sys.argv[index].startswith(
-                "--mount=type=bind,source=/var/lib/lava/dispatcher/tmp"
+                "--mount=type=bind,source={dispatcher_download_dir}"
             ):
                 args.append(
                     sys.argv[index].replace(
-                        "--mount=type=bind,source=/var/lib/lava/dispatcher/tmp",
+                        "--mount=type=bind,source={dispatcher_download_dir}",
                         f"--mount=type=bind,source={VOLUME}",
                     )
                 )

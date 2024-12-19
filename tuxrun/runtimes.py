@@ -161,7 +161,11 @@ class DockerRuntime(ContainerRuntime):
         wrap = (
             wrappers()
             .get_template("docker.jinja2")
-            .render(runtime="docker", volume=str(tmpdir / "dispatcher" / "tmp"))
+            .render(
+                runtime="docker",
+                volume=str(tmpdir / "dispatcher" / "tmp"),
+                dispatcher_download_dir=self.dispatcher_download_dir,
+            )
         )
         LOG.debug("docker wrapper")
         LOG.debug(wrap)

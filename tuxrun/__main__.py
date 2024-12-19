@@ -263,7 +263,9 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     dispatcher = (
         templates.dispatchers()
         .get_template("dispatcher.yaml.jinja2")
-        .render(prefix=tmpdir.name)
+        .render(
+            dispatcher_download_dir=options.dispatcher_download_dir, prefix=tmpdir.name
+        )
     )
     LOG.debug("dispatcher config")
     LOG.debug(dispatcher)
@@ -324,7 +326,9 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     # start the pre_run command
     if options.device.flag_use_pre_run_cmd or options.qemu_image:
         LOG.debug("Pre run command")
-        runtime.bind(tmpdir / "dispatcher" / "tmp", "/var/lib/lava/dispatcher/tmp")
+        runtime.bind(
+            tmpdir / "dispatcher" / "tmp", options.dispatcher_download_dir / "tmp"
+        )
         (tmpdir / "dispatcher" / "tmp").mkdir()
         runtime.pre_run(tmpdir)
 
