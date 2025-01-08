@@ -228,3 +228,17 @@ trigger_tuxsuite:
     - tags
   needs:
     - pages
+
+trigger_bot_pipeline:
+  stage: test
+  image: curlimages/curl:latest
+  script:
+    - echo "Triggering pipeline for pre-commit hook."
+    - |
+      curl -X POST \
+           -F token=$GITLABBOT_TRIGGER_TOKEN \
+           -F ref=main \
+           https://gitlab.com/api/v4/projects/$GITLABBOT_PROJECT_ID/trigger/pipeline
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
