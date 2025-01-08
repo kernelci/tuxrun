@@ -35,7 +35,6 @@ actions:
         image_arg: "-drive file={rootfs},format=raw,if=virtio"
         url: "https://storage.tuxboot.com/buildroot/ppc32/rootfs.ext4.zst"
         compression: zstd
-        format: ext4
 - boot:
     method: qemu
     timeout:

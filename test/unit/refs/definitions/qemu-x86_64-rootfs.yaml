@@ -34,7 +34,6 @@ actions:
       rootfs:
         image_arg: "-drive file={rootfs},if=ide,format=raw"
         url: "https://example.com/rootfs.ext4"
-        format: ext4
 - boot:
     method: qemu
     timeout:

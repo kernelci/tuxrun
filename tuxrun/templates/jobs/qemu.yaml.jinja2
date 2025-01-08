@@ -62,8 +62,8 @@ actions:
 {% if compression(rootfs)[1] is not none %}
         compression: {{ compression(rootfs)[1] }}
 {% endif %}
-        format: ext4
 {% if overlays %}
+        format: ext4
         overlays:
 {% if tests %}
           lava: true
@@ -80,6 +80,7 @@ actions:
 {% endif %}
 {% endfor %}
 {% elif tests %}
+        format: ext4
         overlays:
           lava: true
 {% endif %}

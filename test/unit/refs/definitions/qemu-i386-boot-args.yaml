@@ -35,7 +35,6 @@ actions:
         image_arg: "-drive file={rootfs},if=ide,format=raw"
         url: "https://storage.tuxboot.com/buildroot/i386/rootfs.ext4.zst"
         compression: zstd
-        format: ext4
 - boot:
     method: qemu
     timeout:
