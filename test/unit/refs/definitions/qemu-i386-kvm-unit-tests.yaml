@@ -14,7 +14,7 @@ context:
     no_network: true
 timeouts:
   job:
-    minutes: 35
+    minutes: 45
   action:
    minutes: 5
   actions:
@@ -25,7 +25,7 @@ actions:
 - deploy:
     to: tmpfs
     timeout:
-      minutes: 5
+      minutes: 15
     os: oe
     images:
       kernel:

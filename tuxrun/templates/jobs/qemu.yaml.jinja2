@@ -19,7 +19,7 @@ context:
     no_kvm: {{ no_kvm|lower }}
     no_network: {{ no_network|lower}}
 
-{%- set deploy_timeout = timeouts.deploy|default(5) %}
+{%- set deploy_timeout = timeouts.deploy|default(15) %}
 {%- set boot_timeout = timeouts.boot|default(15) %}
 
 {% block timeouts %}
