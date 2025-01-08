@@ -6,8 +6,8 @@ visibility: public
 
 {% block context %}{% endblock %}
 
-{%- set deploy_timeout = timeouts.deploy|default(5) %}
-{%- set boot_timeout = timeouts.boot|default(10) %}
+{%- set deploy_timeout = timeouts.deploy|default(deploy_timeout) %}
+{%- set boot_timeout = timeouts.boot|default(boot_timeout) %}
 
 timeouts:
   job:

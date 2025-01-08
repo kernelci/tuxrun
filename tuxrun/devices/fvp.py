@@ -16,6 +16,7 @@ from tuxrun.utils import compression, notnone, slugify
 
 class FVPDevice(Device):
     flag_use_pre_run_cmd = True
+    deploy_timeout = 5
 
     def device_dict(self, context):
         return templates.devices().get_template("fvp.yaml.jinja2").render(**context)
@@ -26,6 +27,7 @@ class AEMvAFVPDevice(FVPDevice):
 
     enable_network: bool = True
     flag_cache_rootfs = True
+    boot_timeout = 10
 
     bl1 = "https://storage.tuxboot.com/buildroot/fvp-aemva/bl1.bin"
     dtb = "https://storage.tuxboot.com/buildroot/fvp-aemva/fvp-base-revc.dtb"
@@ -92,6 +94,11 @@ class AEMvAFVPDevice(FVPDevice):
         kwargs["command_name"] = slugify(
             kwargs.get("parameters").get("command-name", "command")
         )
+        kwargs["boot_timeout"] = kwargs["timeouts"].get("boot", self.boot_timeout)
+        if not kwargs["timeouts"].get("deploy"):
+            kwargs["deploy_timeout"] = self.deploy_timeout + (
+                10 if kwargs["tests_timeout"] + kwargs["boot_timeout"] < 15 else 0
+            )
 
         # render the template
         tests = [
@@ -192,7 +199,12 @@ class MorelloFVPDevice(FVPDevice):
         kwargs["auto_login"] = self.auto_login.copy()
         kwargs["kernel_start_message"] = self.kernel_start_message
         kwargs["support_tests"] = self.support_tests
-        kwargs["boot_timeout"] = self.boot_timeout
+        kwargs["boot_timeout"] = kwargs["timeouts"].get("boot", self.boot_timeout)
+
+        if not kwargs["timeouts"].get("deploy"):
+            kwargs["deploy_timeout"] = self.deploy_timeout + (
+                10 if kwargs["tests_timeout"] + kwargs["boot_timeout"] < 15 else 0
+            )
 
         # render the template
         tests = [

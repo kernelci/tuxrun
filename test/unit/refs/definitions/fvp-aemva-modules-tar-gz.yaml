@@ -7,7 +7,7 @@ visibility: public
 
 timeouts:
   job:
-    minutes: 15
+    minutes: 25
   action:
     minutes: 10
   connection:
@@ -17,7 +17,7 @@ actions:
 - deploy:
     to: fvp
     timeout:
-      minutes: 5
+      minutes: 15
     uniquify: False
     images:
       startup:
