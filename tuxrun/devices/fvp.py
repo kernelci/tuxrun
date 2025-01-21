@@ -281,6 +281,8 @@ class FVPLAVA(FVPDevice):
     name = "fvp-lava"
 
     def validate(self, job_definition, **kwargs):
+        if not job_definition:
+            raise InvalidArgument("Missing argument --job-definition")
         parsed_url = urllib.parse.urlparse(job_definition)
         job_definition = urllib.parse.unquote(parsed_url.path)
         with open(job_definition, "r") as job_file:

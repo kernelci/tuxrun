@@ -290,6 +290,7 @@ FVP_MORELLO_ARGS = [
             "kselftest",
         ],
         ["--device", "qemu-arm64", "--tests", "ltp-smoke", "ltp-smoke"],
+        ["--device", "fvp-lava"],
     ],
 )
 def test_command_line_errors(argv, capsys, monkeypatch, mocker, artefacts):
