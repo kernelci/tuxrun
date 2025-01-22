@@ -14,7 +14,7 @@ from tuxrun.assets import get_rootfs, get_test_definitions
 from tuxrun.devices import Device
 from tuxrun.tests import Test
 from tuxrun.tuxmake import TuxBuildBuild, TuxMakeBuild
-from tuxrun.utils import ProgressIndicator, pathurlnone
+from tuxrun.utils import ProgressIndicator, pathurlnone, DEFAULT_DISPATCHER_DOWNLOAD_DIR
 
 
 ###########
@@ -431,7 +431,7 @@ def setup_parser() -> argparse.ArgumentParser:
     )
     group.add_argument(
         "--dispatcher-download-dir",
-        default="/var/lib/lava/dispatcher/tmp",
+        default=DEFAULT_DISPATCHER_DOWNLOAD_DIR,
         type=Path,
         help="Change the path that the dispatcher is installed to.",
     )

@@ -29,7 +29,13 @@ from tuxrun.results import Results
 from tuxrun.runtimes import Runtime
 from tuxrun.templates import wrappers
 from tuxrun.tests import Test
-from tuxrun.utils import ProgressIndicator, get_new_output_dir, mask_secrets, notify
+from tuxrun.utils import (
+    ProgressIndicator,
+    get_new_output_dir,
+    mask_secrets,
+    notify,
+    DEFAULT_DISPATCHER_DOWNLOAD_DIR,
+)
 from tuxrun.writer import Writer
 from tuxrun.yaml import yaml_load
 
@@ -346,7 +352,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         str(tmpdir / "definition.yaml"),
     ]
 
-    if options.dispatcher_download_dir:
+    if options.dispatcher_download_dir != Path(DEFAULT_DISPATCHER_DOWNLOAD_DIR):
         args.append("--skip-sudo-warning")
 
     results = Results(options.tests, artefacts)

@@ -19,6 +19,9 @@ from tuxrun import requests, xdg
 from tuxrun.yaml import yaml_load
 
 
+DEFAULT_DISPATCHER_DOWNLOAD_DIR = "/var/lib/lava/dispatcher/tmp"
+
+
 class ProgressIndicator(ABC):
     @abstractmethod
     def progress(self, percent):
