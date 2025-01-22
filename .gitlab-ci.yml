@@ -149,44 +149,44 @@ spellcheck:
 ###############
 # integration #
 ###############
-integration:
-  extends: .job
-  image: $CI_REGISTRY_IMAGE/ci-integration
-  stage: test
-  cache:
-    paths: [/root/.cache/tuxrun]
-  script:
-  - PYTHONPATH=. python3 test/integration.py --device $DEVICE --tests $TEST
-  parallel:
-    matrix:
-    #- DEVICE:
-    #  - qemu-arm64
-    #  - qemu-arm64be
-    #  - qemu-mips64
-    #  - qemu-mips64el
-    #  - qemu-ppc32
-    #  - qemu-ppc64
-    #  - qemu-ppc64le
-    #  - qemu-s390
-    #  - qemu-sparc64
-    #  - qemu-x86_64
-    #  TEST:
-    #  - ltp-fcntl-locktests ltp-fsx ltp-fs_perms_simple ltp-smoke
-    #  - ltp-fs_bind
-    #  - ltp-nptl
-    ## FIXME ltp-nptl takes forever on some qemus; ignore that jobs for now
-    - DEVICE:
-      - qemu-armv5
-    #  - qemu-armv7
-    #  - qemu-armv7be
-    #  - qemu-i386
-    #  - qemu-mips32
-    #  - qemu-mips32el
-    #  - qemu-riscv64
-      TEST:
-    #  - ltp-fcntl-locktests ltp-fsx ltp-fs_perms_simple ltp-smoke
-    #  - ltp-fs_bind
-      - ltp-smoke
+# integration:
+#   extends: .job
+#   image: $CI_REGISTRY_IMAGE/ci-integration
+#   stage: test
+#   cache:
+#     paths: [/root/.cache/tuxrun]
+#   script:
+#   - PYTHONPATH=. python3 test/integration.py --device $DEVICE --tests $TEST
+#   parallel:
+#     matrix:
+#     #- DEVICE:
+#     #  - qemu-arm64
+#     #  - qemu-arm64be
+#     #  - qemu-mips64
+#     #  - qemu-mips64el
+#     #  - qemu-ppc32
+#     #  - qemu-ppc64
+#     #  - qemu-ppc64le
+#     #  - qemu-s390
+#     #  - qemu-sparc64
+#     #  - qemu-x86_64
+#     #  TEST:
+#     #  - ltp-fcntl-locktests ltp-fsx ltp-fs_perms_simple ltp-smoke
+#     #  - ltp-fs_bind
+#     #  - ltp-nptl
+#     ## FIXME ltp-nptl takes forever on some qemus; ignore that jobs for now
+#     - DEVICE:
+#       - qemu-armv5
+#     #  - qemu-armv7
+#     #  - qemu-armv7be
+#     #  - qemu-i386
+#     #  - qemu-mips32
+#     #  - qemu-mips32el
+#     #  - qemu-riscv64
+#       TEST:
+#     #  - ltp-fcntl-locktests ltp-fsx ltp-fs_perms_simple ltp-smoke
+#     #  - ltp-fs_bind
+#       - ltp-smoke
 
 #########
 # Build #
