@@ -13,7 +13,6 @@ from tuxrun import __version__
 from tuxrun.assets import get_rootfs, get_test_definitions
 from tuxrun.devices import Device
 from tuxrun.tests import Test
-from tuxrun.tuxmake import TuxBuildBuild, TuxMakeBuild
 from tuxrun.utils import ProgressIndicator, pathurlnone, DEFAULT_DISPATCHER_DOWNLOAD_DIR
 
 
@@ -67,20 +66,6 @@ def filter_artefacts(options):
         "uefi",
     ]
     return {k: getattr(options, k) for k in vars(options) if k in keys}
-
-
-def tuxbuild_url(s):
-    try:
-        return TuxBuildBuild(s.rstrip("/"))
-    except TuxBuildBuild.Invalid as e:
-        raise argparse.ArgumentTypeError(str(e))
-
-
-def tuxmake_directory(s):
-    try:
-        return TuxMakeBuild(s)
-    except TuxMakeBuild.Invalid as e:
-        raise argparse.ArgumentTypeError(str(e))
 
 
 ###########
@@ -304,14 +289,14 @@ def setup_parser() -> argparse.ArgumentParser:
         "--tuxbuild",
         metavar="URL",
         default=None,
-        type=tuxbuild_url,
+        type=str,
         help="URL of a TuxBuild build",
     )
     group.add_argument(
         "--tuxmake",
         metavar="DIRECTORY",
         default=None,
-        type=tuxmake_directory,
+        type=str,
         help="directory containing a TuxMake build",
     )
     artefact("test-definitions")
