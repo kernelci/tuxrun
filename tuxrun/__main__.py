@@ -9,7 +9,6 @@ import contextlib
 import json
 import logging
 import re
-import shlex
 import shutil
 import signal
 import subprocess
@@ -20,24 +19,26 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 
-from tuxrun import templates
-from tuxrun.argparse import filter_artefacts, pathurlnone, setup_parser
-from tuxrun.assets import get_rootfs, get_test_definitions
-from tuxrun.devices import Device
-from tuxrun.exceptions import InvalidArgument
-from tuxrun.results import Results
-from tuxrun.runtimes import Runtime
-from tuxrun.templates import wrappers
-from tuxrun.tests import Test
-from tuxrun.utils import (
+sys.path.append("/usr/share/tuxlava")
+
+from tuxrun import templates  # noqa: E402
+from tuxrun.argparse import filter_artefacts, pathurlnone, setup_parser  # noqa: E402
+from tuxrun.assets import get_rootfs, get_test_definitions  # noqa: E402
+from tuxrun.results import Results  # noqa: E402
+from tuxrun.runtimes import Runtime  # noqa: E402
+from tuxrun.templates import wrappers  # noqa: E402
+from tuxrun.utils import (  # noqa: E402
     ProgressIndicator,
     get_new_output_dir,
     mask_secrets,
     notify,
     DEFAULT_DISPATCHER_DOWNLOAD_DIR,
 )
-from tuxrun.writer import Writer
-from tuxrun.yaml import yaml_load
+from tuxrun.writer import Writer  # noqa: E402
+from tuxrun.yaml import yaml_load  # noqa: E402
+
+from tuxlava.jobs import Job  # type: ignore  # noqa: E402
+from tuxlava.exceptions import TuxLavaException  # type: ignore # noqa: E402
 
 ###########
 # GLobals #
@@ -172,82 +173,74 @@ def run_hacking_sesson(definition, case, test):
 # Entrypoint #
 ##############
 def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> int:
-    # Render the job definition and device dictionary
-    extra_assets = []
-    overlays = []
-
-    if options.modules:
-        overlays.append(("modules", options.modules[0], options.modules[1]))
-        extra_assets.append(options.modules[0])
-
-    # When using --shared without any arguments, point to cache_dir
-    if options.shared is not None:
-        if not options.shared:
-            assert cache_dir
-            options.shared = [str(cache_dir), "/mnt/tuxrun"]
-        extra_assets.append(("file://" + options.shared[0], False))
-
-    for index, item in enumerate(options.overlays):
-        overlays.append((f"overlay-{index:02}", item[0], item[1]))
-        extra_assets.append(item[0])
-
-    # Add test definitions only when needed
-    test_definitions = None
-    if any(t.need_test_definition for t in options.tests):
-        test_definitions = get_test_definitions(
-            options.test_definitions,
-            ProgressIndicator.get("Downloading test definitions"),
-        )
-        extra_assets.append(test_definitions)
-
-    # Add extra assets from parameters
-    for k, v in options.parameters.items():
-        if v.startswith("file://"):
-            extra_assets.append(v)
-
-    commands = " ".join([shlex.quote(s) for s in options.commands])
-
     def_arguments = {
+        "ap_romfw": options.ap_romfw,
         "bios": options.bios,
         "bl1": options.bl1,
-        "commands": commands,
+        "boot_args": options.boot_args,
+        "cache_dir": cache_dir,
+        "commands": options.commands,
         "device": options.device,
-        "qemu_image": options.qemu_image,
         "dtb": options.dtb,
-        "kernel": options.kernel,
-        "ap_romfw": options.ap_romfw,
-        "mcp_fw": options.mcp_fw,
-        "mcp_romfw": options.mcp_romfw,
-        "fip": options.fip,
         "enable_kvm": options.enable_kvm,
         "enable_trustzone": options.enable_trustzone,
         "enable_network": options.enable_network,
-        "overlays": overlays,
+        "fip": options.fip,
+        "job_definition": options.job_definition,
+        "kernel": options.kernel,
+        "mcp_fw": options.mcp_fw,
+        "mcp_romfw": options.mcp_romfw,
+        "modules": options.modules,
+        "overlays": options.overlays,
+        "parameters": options.parameters,
         "prompt": options.prompt,
+        "qemu_image": options.qemu_image,
+        "qemu_binary": options.qemu_binary,
         "rootfs": options.rootfs,
         "rootfs_partition": options.partition,
-        "shared": options.shared,
         "scp_fw": options.scp_fw,
         "scp_romfw": options.scp_romfw,
+        "secrets": options.secrets,
+        "shared": options.shared,
+        "shell": options.shell,
         "ssh_host": options.ssh_host,
+        "ssh_identity_file": options.ssh_identity_file,
         "ssh_prompt": options.ssh_prompt,
         "ssh_port": options.ssh_port,
         "ssh_user": options.ssh_user,
         "tests": options.tests,
-        "test_definitions": test_definitions,
-        "tests_timeout": sum(t.timeout for t in options.tests),
         "timeouts": options.timeouts,
         "tmpdir": tmpdir,
-        "tux_boot_args": (
-            " ".join(shlex.split(options.boot_args)) if options.boot_args else None
-        ),
-        "tux_prompt": options.prompt,
-        "parameters": options.parameters,
+        "tuxbuild": options.tuxbuild,
+        "tuxmake": options.tuxmake,
         "uefi": options.uefi,
-        "boot_args": options.boot_args,
-        "secrets": options.secrets,
     }
-    definition = options.device.definition(**def_arguments)
+    job = Job(**def_arguments)
+    job.initialize()
+    # Copy extra assets already collected by TuxLAVA
+    # TuxLAVA also collects extra assets from device during job.initialize()
+    extra_assets = job.extra_assets.copy()
+
+    # Handle rootfs and test definitions separately
+    if job.device.flag_cache_rootfs:
+        job.rootfs = pathurlnone(
+            get_rootfs(
+                job.device,
+                job.rootfs,
+                ProgressIndicator.get("Downloading root filesystem"),
+            )
+        )
+
+    test_definitions = None
+    if any(t.need_test_definition for t in job.tests):
+        test_definitions = get_test_definitions(
+            options.test_definitions,
+            ProgressIndicator.get("Downloading test definitions"),
+        )
+        job.test_definitions = test_definitions
+        extra_assets.append(test_definitions)
+
+    definition = job.render()
     LOG.debug("job definition")
     LOG.debug(definition)
 
@@ -257,7 +250,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     if options.fvp_ubl_license:
         context["fvp_ubl_license"] = options.fvp_ubl_license
 
-    device_dict = options.device.device_dict(context)
+    device_dict = job.device.device_dict(context)
     LOG.debug("device dictionary")
     LOG.debug(device_dict)
 
@@ -277,9 +270,6 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     LOG.debug(dispatcher)
     (tmpdir / "dispatcher.yaml").write_text(dispatcher, encoding="utf-8")
 
-    # Add extra assets from device
-    extra_assets.extend(options.device.extra_assets(**def_arguments))
-
     # Use a container runtime
     runtime = Runtime.select(options.runtime)(options.dispatcher_download_dir)
     runtime.name(tmpdir.name)
@@ -287,19 +277,19 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
 
     runtime.bind(tmpdir)
     for path in [
-        options.ap_romfw,
-        options.bios,
-        options.bl1,
-        options.dtb,
-        options.fip,
-        options.kernel,
-        options.mcp_fw,
-        options.mcp_romfw,
-        options.rootfs,
-        options.scp_fw,
-        options.scp_romfw,
-        options.ssh_identity_file,
-        options.uefi,
+        job.ap_romfw,
+        job.bios,
+        job.bl1,
+        job.dtb,
+        job.fip,
+        job.kernel,
+        job.mcp_fw,
+        job.mcp_romfw,
+        job.rootfs,
+        job.scp_fw,
+        job.scp_romfw,
+        job.ssh_identity_file,
+        job.uefi,
     ] + extra_assets:
         ro = True
         if isinstance(path, tuple):
@@ -309,8 +299,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         if urlparse(path).scheme == "file":
             runtime.bind(path[7:], ro=ro)
 
-    if options.qemu_binary:
-        overlay_qemu(options.qemu_binary, tmpdir, runtime)
+    if job.qemu_binary:
+        overlay_qemu(job.qemu_binary, tmpdir, runtime)
 
     # Forward the signal to the runtime
     def handler(*_):
@@ -330,7 +320,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     signal.alarm(job_timeout)
 
     # start the pre_run command
-    if options.device.flag_use_pre_run_cmd or options.qemu_image:
+    if job.device.flag_use_pre_run_cmd or job.qemu_image:
         LOG.debug("Pre run command")
         runtime.bind(
             tmpdir / "dispatcher" / "tmp",
@@ -356,8 +346,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     if options.dispatcher_download_dir != Path(DEFAULT_DISPATCHER_DOWNLOAD_DIR):
         args.append("--skip-sudo-warning")
 
-    results = Results(options.tests, artefacts)
-    hacking_session = bool("hacking-session" in t.name for t in options.tests)
+    results = Results(job.tests, artefacts)
+    hacking_session = bool("hacking-session" in t.name for t in job.tests)
     # Start the writer (stdout or log-file)
     with Writer(
         options.log_file,
@@ -412,42 +402,14 @@ def main() -> int:
     LOG.addHandler(handler)
     LOG.setLevel(logging.DEBUG if options.debug else logging.INFO)
 
-    if options.tuxbuild or options.tuxmake:
-        tux = options.tuxbuild or options.tuxmake
-        options.kernel = options.kernel or tux.kernel
-        options.modules = options.modules or tux.modules
-        options.device = options.device or f"qemu-{tux.target_arch}"
-        if options.device == "qemu-armv5":
-            options.dtb = tux.url + "/dtbs/versatile-pb.dtb"
-        if options.parameters:
-            if options.modules:
-                module, path = options.modules
-                modules_path = options.parameters.get("MODULES_PATH", path)
-                options.modules = [module, modules_path]
+    if not options.device:
+        if not (options.tuxmake or options.tuxbuild):
+            parser.error("argument --device is required")
 
-            for k in options.parameters:
-                if isinstance(options.parameters[k], str):
-                    options.parameters[k] = options.parameters[k].replace(
-                        "$BUILD/", tux.url + "/"
-                    )
-    else:
-        for k in options.parameters:
-            if isinstance(options.parameters[k], str):
-                if "$BUILD/" in options.parameters[k]:
-                    parser.error(
-                        "parameter with '$BUILD/' substitution requires --tuxbuild or --tuxmake"
-                    )
-
-    if options.shell:
-        if "hacking-session" not in options.tests:
-            options.tests.append("hacking-session")
+    if "hacking-session" in options.tests:
+        options.enable_network = True
         if not options.parameters.get("PUB_KEY"):
-            keys = list(Path("~/.ssh/").expanduser().glob("id_*.pub"))
-            if len(keys) == 0:
-                parser.error("no ssh public key in ~/.ssh/")
-            options.parameters["PUB_KEY"] = "\n\n".join(
-                k.read_text(encoding="utf-8").rstrip() for k in keys
-            )
+            parser.error("argument missing --parameters PUB_KEY='...'")
 
     cache_dir = None
     if options.lava_definition or options.results_hooks or options.shared == []:
@@ -479,51 +441,15 @@ def main() -> int:
     elif options.log_file is None:
         options.log_file = "-"
 
-    if not options.device:
-        parser.error("argument --device is required")
-
-    if options.commands:
-        options.tests.append("commands")
-
-    if "hacking-session" in options.tests:
-        options.enable_network = True
-        if not options.parameters.get("PUB_KEY"):
-            parser.error("argument missing --parameters PUB_KEY='...'")
-
-    try:
-        options.device = Device.select(options.device)()
-        options.tests = [Test.select(t)(options.timeouts.get(t)) for t in options.tests]
-        # options.rootfs will be overridden later on by get_rootfs
-        options.device.validate(**filter_options(options))
-        options.device.default(options)
-    except InvalidArgument as exc:
-        parser.error(str(exc))
-
-    if options.shared is not None and not options.device.name.startswith("qemu-"):
-        parser.error("--shared options is only available for qemu devices")
-
-    if options.tests:
-        tests = [t.name for t in options.tests]
-        if sorted(list(set(tests))) != sorted(tests):
-            parser.error("each test should appears only once")
-
     artefacts = filter_artefacts(options)
-
-    # Download only after the device has been found
-    if options.device.flag_cache_rootfs:
-        options.rootfs = pathurlnone(
-            get_rootfs(
-                options.device,
-                options.rootfs,
-                ProgressIndicator.get("Downloading root filesystem"),
-            )
-        )
 
     # Create the temp directory
     tmpdir = Path(tempfile.mkdtemp(prefix="tuxrun-"))
     LOG.debug(f"temporary directory: '{tmpdir}'")
     try:
         return run(options, tmpdir, cache_dir, artefacts)
+    except TuxLavaException as exc:
+        parser.error(str(exc))
     except Exception as exc:
         LOG.error("Raised an exception %s", exc)
         raise
