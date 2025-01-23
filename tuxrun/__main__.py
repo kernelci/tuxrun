@@ -21,7 +21,7 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from tuxrun import templates
-from tuxrun.argparse import filter_artefacts, filter_options, pathurlnone, setup_parser
+from tuxrun.argparse import filter_artefacts, pathurlnone, setup_parser
 from tuxrun.assets import get_rootfs, get_test_definitions
 from tuxrun.devices import Device
 from tuxrun.exceptions import InvalidArgument

@@ -1,14 +1,6 @@
-from argparse import Namespace
-
 import pytest
 
-from tuxrun.argparse import filter_options, setup_parser
-
-
-def test_filter_options():
-    assert filter_options(Namespace()) == {}
-    assert filter_options(Namespace(hello="world")) == {"hello": "world"}
-    assert filter_options(Namespace(hello="world", debug=True)) == {"hello": "world"}
+from tuxrun.argparse import setup_parser
 
 
 def test_timeouts_parser():

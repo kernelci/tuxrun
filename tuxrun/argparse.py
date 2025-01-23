@@ -20,35 +20,6 @@ from tuxlava.tests import Test  # type: ignore
 ###########
 # Helpers #
 ###########
-def filter_options(options):
-    keys = [
-        "device",
-        "tuxbuild",
-        "tuxmake",
-        "test_definitions",
-        "timeouts",
-        "runtime",
-        "image",
-        "qemu_image",
-        "qemu_binary",
-        "cache_dir",
-        "save_outputs",
-        "log_file",
-        "log_file_html",
-        "log_file_text",
-        "log_file_yaml",
-        "metadata",
-        "results",
-        "results_hooks",
-        "shell",
-        "debug",
-        "dispatcher_download_dir",
-        "lava_definition",
-        "shared",
-    ]
-    return {k: getattr(options, k) for k in vars(options) if k not in keys}
-
-
 def filter_artefacts(options):
     keys = [
         "ap-romfw",
