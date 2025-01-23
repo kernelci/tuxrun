@@ -11,9 +11,10 @@ from pathlib import Path
 
 from tuxrun import __version__
 from tuxrun.assets import get_rootfs, get_test_definitions
-from tuxrun.devices import Device
-from tuxrun.tests import Test
 from tuxrun.utils import ProgressIndicator, pathurlnone, DEFAULT_DISPATCHER_DOWNLOAD_DIR
+
+from tuxlava.devices import Device  # type: ignore
+from tuxlava.tests import Test  # type: ignore
 
 
 ###########
@@ -79,7 +80,8 @@ class ListDevicesAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         parser._print_message(
-            "\n".join([d.name for d in Device.list()]) + "\n", sys.stdout
+            "\n".join([d.name for d in Device.list(virtual_device=True)]) + "\n",
+            sys.stdout,
         )
         parser.exit()
 
@@ -91,7 +93,9 @@ class ListTestsAction(argparse.Action):
         super().__init__(option_strings, dest=dest, default=default, nargs=0, help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        parser._print_message("\n".join(Test.list()) + "\n", sys.stdout)
+        parser._print_message(
+            "\n".join(Test.list(virtual_device=True)) + "\n", sys.stdout
+        )
         parser.exit()
 
 
@@ -114,7 +118,7 @@ class KeyValueParameterAction(argparse.Action):
 
 class KeyValueIntAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        KEYS = ["deploy", "boot"] + Test.list()
+        KEYS = ["deploy", "boot"] + Test.list(virtual_device=True)
         for value in values:
             try:
                 key, value = value.split("=")
@@ -174,7 +178,9 @@ class UpdateCacheAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         print("Updating local cache:")
         print("* Rootfs:")
-        for device in [d for d in Device.list() if d.flag_cache_rootfs]:
+        for device in [
+            d for d in Device.list(virtual_device=True) if d.flag_cache_rootfs
+        ]:
             print(f"  * {device.name}")
             get_rootfs(
                 device, progress=ProgressIndicator.get("Downloading root filesystem")
@@ -336,7 +342,7 @@ def setup_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="T",
         help="test suites",
-        choices=Test.list(),
+        choices=Test.list(virtual_device=True),
         action="extend",
     )
     group.add_argument(
@@ -356,7 +362,7 @@ def setup_parser() -> argparse.ArgumentParser:
         default=None,
         metavar="NAME",
         help="Device type",
-        choices=[d.name for d in Device.list()],
+        choices=[d.name for d in Device.list(virtual_device=True)],
     )
     group.add_argument(
         "--boot-args", default=None, metavar="ARGS", help="extend boot arguments"

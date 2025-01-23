@@ -270,7 +270,7 @@ def main():
         pat = options.devices[0]
         options.devices = [
             d.name
-            for d in Device.list(virtualisation=True)
+            for d in Device.list(virtual_device=True)
             if fnmatch.fnmatch(d.name, pat)
         ]
         for qemu in ["qemu-riscv32", "qemu-sh4"]:
