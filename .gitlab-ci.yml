@@ -15,7 +15,7 @@ variables:
     - apt update && apt install -y python3-pip virtualenv python3-virtualenv python3-venv python3-ruamel.yaml
     - python3 -m venv $HOME/.foo-venv
     - source $HOME/.foo-venv/bin/activate
-    - python3 -m pip install mkdocs-material tuxpkg ruamel.yaml # FIXME not in Debian
+    - python3 -m pip install tuxlava mkdocs-material tuxpkg ruamel.yaml # FIXME not in Debian
   script:
   - make $CI_JOB_NAME
 

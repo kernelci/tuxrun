@@ -8,8 +8,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict
 
-from tuxrun.devices import Device
-from tuxrun.tests import Test
+from tuxlava.devices import Device  # type: ignore
+from tuxlava.tests import Test  # type: ignore
 from tuxrun.yaml import yaml_load
 
 
@@ -269,7 +269,9 @@ def main():
     if len(options.devices) == 1 and "*" in options.devices[0]:
         pat = options.devices[0]
         options.devices = [
-            d.name for d in Device.list() if fnmatch.fnmatch(d.name, pat)
+            d.name
+            for d in Device.list(virtualisation=True)
+            if fnmatch.fnmatch(d.name, pat)
         ]
         for qemu in ["qemu-riscv32", "qemu-sh4"]:
             if qemu in options.devices:
