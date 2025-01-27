@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-i386: rcutorture"
-priority: "medium"
+job_name: "tuxlava@qemu-i386: rcutorture"
+priority: low
 visibility: "public"
 
 context:

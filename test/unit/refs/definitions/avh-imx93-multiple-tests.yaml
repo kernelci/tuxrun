@@ -1,7 +1,7 @@
 device_type: "avh"
 
-job_name: "tuxrun@avh-imx93: ltp-smoke, kselftest-arm64"
-priority: "medium"
+job_name: "tuxlava@avh-imx93: ltp-smoke, kselftest-arm64"
+priority: low
 visibility: "public"
 timeouts:
   job:
@@ -34,6 +34,7 @@ actions:
         root_partition: 1
         partition: 1
         overlays:
+          lava: true
           modules:
             url: "https://example.com/modules.tar.xz"
             path: "/"

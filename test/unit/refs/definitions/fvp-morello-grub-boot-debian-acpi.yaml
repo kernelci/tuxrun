@@ -1,7 +1,7 @@
 device_type: "fvp"
 
-job_name: "tuxrun@fvp-morello-grub"
-priority: medium
+job_name: "tuxlava@fvp-morello-grub"
+priority: low
 visibility: public
 
 

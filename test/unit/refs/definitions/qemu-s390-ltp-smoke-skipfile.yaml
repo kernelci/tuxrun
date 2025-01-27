@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-s390: ltp-smoke"
-priority: "medium"
+job_name: "tuxlava@qemu-s390: ltp-smoke"
+priority: low
 visibility: "public"
 
 context:

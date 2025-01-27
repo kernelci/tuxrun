@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-arm64: ltp-fcntl-locktests"
-priority: "medium"
+job_name: "tuxlava@qemu-arm64: ltp-fcntl-locktests"
+priority: low
 visibility: "public"
 
 context:
@@ -14,7 +14,7 @@ context:
     no_network: true
 timeouts:
   job:
-    minutes: 32
+    minutes: 35
   action:
    minutes: 5
   actions:
@@ -49,7 +49,7 @@ actions:
     - 'root@(.*):[/~]#'
 - test:
     timeout:
-      minutes: 2
+      minutes: 5
     definitions:
     - repository: file://testdef.tar.zst
       lava-signal: kmsg

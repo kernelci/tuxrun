@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-x86_64: boot"
-priority: "medium"
+job_name: "tuxlava@qemu-x86_64: boot"
+priority: low
 visibility: "public"
 
 context:

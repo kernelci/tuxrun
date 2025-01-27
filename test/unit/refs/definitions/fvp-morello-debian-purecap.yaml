@@ -1,7 +1,7 @@
 device_type: "fvp"
 
-job_name: "tuxrun@fvp-morello-debian"
-priority: medium
+job_name: "tuxlava@fvp-morello-debian"
+priority: low
 visibility: public
 
 

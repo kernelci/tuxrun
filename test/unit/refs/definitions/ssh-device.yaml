@@ -1,7 +1,7 @@
 device_type: "ssh"
 
-job_name: "tuxrun@ssh-device: ltp-smoke"
-priority: "medium"
+job_name: "tuxlava@ssh-device: ltp-smoke"
+priority: low
 visibility: "public"
 timeouts:
   job:

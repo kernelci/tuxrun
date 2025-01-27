@@ -1,7 +1,7 @@
 device_type: "fvp"
 
-job_name: "tuxrun@fvp-aemva"
-priority: medium
+job_name: "tuxlava@fvp-aemva"
+priority: low
 visibility: public
 
 

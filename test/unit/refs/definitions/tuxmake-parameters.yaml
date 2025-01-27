@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-arm64: kselftest-cgroup"
-priority: "medium"
+job_name: "tuxlava@qemu-arm64: kselftest-cgroup"
+priority: low
 visibility: "public"
 
 context:

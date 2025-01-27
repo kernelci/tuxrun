@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-armv5: ltp-fs_bind"
-priority: "medium"
+job_name: "tuxlava@qemu-armv5: ltp-fs_bind"
+priority: low
 visibility: "public"
 
 context:

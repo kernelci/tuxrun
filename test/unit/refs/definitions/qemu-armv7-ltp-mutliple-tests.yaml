@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-armv7: ltp-fs_perms_simple, ltp-fsx, ltp-nptl"
-priority: "medium"
+job_name: "tuxlava@qemu-armv7: ltp-fs_perms_simple, ltp-fsx, ltp-nptl"
+priority: low
 visibility: "public"
 
 context:

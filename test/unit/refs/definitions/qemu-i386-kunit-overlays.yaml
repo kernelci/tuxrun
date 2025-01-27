@@ -1,7 +1,7 @@
 device_type: "qemu"
 
-job_name: "tuxrun@qemu-i386: kunit"
-priority: "medium"
+job_name: "tuxlava@qemu-i386: kunit"
+priority: low
 visibility: "public"
 
 context:

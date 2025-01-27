@@ -1,7 +1,7 @@
 device_type: "avh"
 
-job_name: "tuxrun@avh-rpi4b: boot"
-priority: "medium"
+job_name: "tuxlava@avh-rpi4b: boot"
+priority: low
 visibility: "public"
 timeouts:
   job:
