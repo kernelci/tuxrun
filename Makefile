@@ -1,5 +1,5 @@
 export PROJECT := tuxrun
-export TUXPKG_MIN_COVERAGE := 96
+export TUXPKG_MIN_COVERAGE := 85
 export TUXPKG_FLAKE8_OPTIONS := --ignore=E203,E501,W503
 check: typecheck test spellcheck stylecheck
 

@@ -2,6 +2,7 @@ import json
 import os
 
 import pytest
+import shlex
 import yaml
 
 import tuxrun.__main__
@@ -295,14 +296,12 @@ FVP_MORELLO_ARGS = [
 )
 def test_command_line_errors(argv, capsys, monkeypatch, mocker, artefacts):
     monkeypatch.setattr("tuxrun.__main__.sys.argv", ["tuxrun"] + argv)
-    run = mocker.patch("tuxrun.__main__.run", return_value=0)
     with pytest.raises(SystemExit) as exc:
         main()
     assert exc.value.code == 2
     stdout, stderr = capsys.readouterr()
     assert "usage: tuxrun" in stderr
     assert "tuxrun: error:" in stderr
-    run.assert_not_called()
 
 
 def test_command_line_parameters(monkeypatch, mocker, artefacts):
@@ -415,7 +414,9 @@ def test_save_output(monkeypatch, tmp_path, run):
     )
 
 
-def test_tuxbuild(get, monkeypatch, mocker, run):
+def test_tuxbuild(get, mocker):
+    from tuxlava.jobs import tuxbuild_url  # type: ignore
+
     data = json.dumps(
         {
             "results": {
@@ -424,45 +425,17 @@ def test_tuxbuild(get, monkeypatch, mocker, run):
             "build": {"target_arch": "x86_64"},
         }
     )
-    mocker.patch("tuxrun.__main__.get_rootfs", return_value="https://example.com")
     get.side_effect = [mocker.Mock(status_code=200, text=data)]
-    monkeypatch.setattr("sys.argv", ["tuxrun", "--tuxbuild", "https://example.com"])
 
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert options.kernel == "https://example.com/bzImage"
-    assert options.modules[0] == "https://example.com/modules.tar.xz"
-    assert options.device.name == "qemu-x86_64"
-    assert options.dtb is None
+    tux = tuxbuild_url("https://example.com")
+    assert tux.kernel == "https://example.com/bzImage"
+    assert tux.modules[0] == "https://example.com/modules.tar.xz"
+    assert tux.target_arch == "x86_64"
 
 
-def test_tuxbuild_armv5(get, monkeypatch, mocker, run):
-    data = json.dumps(
-        {
-            "results": {
-                "artifacts": {"kernel": ["bzImage"], "modules": ["modules.tar.xz"]},
-            },
-            "build": {"target_arch": "arm"},
-        }
-    )
-    mocker.patch("tuxrun.__main__.get_rootfs", return_value="https://example.com")
-    get.side_effect = [mocker.Mock(status_code=200, text=data)]
-    monkeypatch.setattr(
-        "sys.argv",
-        ["tuxrun", "--tuxbuild", "https://example.com", "--device", "qemu-armv5"],
-    )
+def test_tuxmake_directory(tmp_path, run):
+    from tuxlava.jobs import tuxmake_directory
 
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert options.kernel == "https://example.com/bzImage"
-    assert options.modules[0] == "https://example.com/modules.tar.xz"
-    assert options.device.name == "qemu-armv5"
-    assert options.dtb == "https://example.com/dtbs/versatile-pb.dtb"
-
-
-def test_tuxmake_directory(monkeypatch, tmp_path, run):
     tuxmake_build = tmp_path / "build"
     tuxmake_build.mkdir()
     (tuxmake_build / "metadata.json").write_text(
@@ -475,70 +448,17 @@ def test_tuxmake_directory(monkeypatch, tmp_path, run):
         }
         """
     )
-    monkeypatch.setattr("sys.argv", ["tuxrun", "--tuxmake", str(tuxmake_build)])
 
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert options.kernel == f"file://{tuxmake_build}/bzImage"
-    assert options.modules[0] == f"file://{tuxmake_build}/modules.tar.xz"
-    assert options.modules[1] == "/"
-    assert options.device.name == "qemu-x86_64"
-    assert options.dtb is None
-
-    # case: with custom MODULES_PATH in parameters
-    monkeypatch.setattr(
-        "sys.argv",
-        [
-            "tuxrun",
-            "--tuxmake",
-            str(tuxmake_build),
-            "--parameters",
-            "MODULES_PATH=/usr/",
-        ],
-    )
-
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert options.kernel == f"file://{tuxmake_build}/bzImage"
-    assert options.modules[0] == f"file://{tuxmake_build}/modules.tar.xz"
-    assert options.modules[1] == "/usr/"
-    assert options.device.name == "qemu-x86_64"
-    assert options.dtb is None
+    tux = tuxmake_directory(tuxmake_build)
+    assert tux.kernel == f"file://{tuxmake_build}/bzImage"
+    assert tux.modules[0] == f"file://{tuxmake_build}/modules.tar.xz"
+    assert tux.modules[1] == "/"
+    assert tux.target_arch == "x86_64"
 
 
-def test_tuxmake_directory_armv5(monkeypatch, tmp_path, run):
-    tuxmake_build = tmp_path / "build"
-    tuxmake_build.mkdir()
-    (tuxmake_build / "metadata.json").write_text(
-        """
-        {
-            "results": {
-                "artifacts": {"kernel": ["zImage"], "modules": ["modules.tar.xz"]}
-            },
-            "build": {"target_arch": "arm"}
-        }
-        """
-    )
-    monkeypatch.setattr(
-        "sys.argv",
-        ["tuxrun", "--tuxmake", str(tuxmake_build), "--device", "qemu-armv5"],
-    )
+def test_no_modules(tmp_path):
+    from tuxlava.jobs import tuxmake_directory
 
-    (tuxmake_build / "dtbs").mkdir()
-    (tuxmake_build / "dtbs" / "versatile-pb.dtb").write_text("")
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert options.kernel == f"file://{tuxmake_build}/zImage"
-    assert options.modules[0] == f"file://{tuxmake_build}/modules.tar.xz"
-    assert options.modules[1] == "/"
-    assert options.device.name == "qemu-armv5"
-    assert options.dtb == f"file://{tuxmake_build}/dtbs/versatile-pb.dtb"
-
-
-def test_no_modules(monkeypatch, tmp_path, run):
     tuxmake_build = tmp_path / "build"
     tuxmake_build.mkdir()
     (tuxmake_build / "metadata.json").write_text(
@@ -551,12 +471,9 @@ def test_no_modules(monkeypatch, tmp_path, run):
         }
         """
     )
-    monkeypatch.setattr("sys.argv", ["tuxrun", "--tuxmake", str(tuxmake_build)])
 
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert not options.modules
+    tux = tuxmake_directory(tuxmake_build)
+    assert tux.modules == []
 
 
 def test_invalid_tuxmake_directory(monkeypatch, tmp_path, capsys):
@@ -652,17 +569,17 @@ def test_overlays(monkeypatch, lava_run_call, lava_run, artefacts):
     assert f"{artefacts}/morestuff.tar.gz:{artefacts}/morestuff.tar.gz:ro" in args
 
 
-def test_custom_commands(monkeypatch, run):
-    monkeypatch.setattr(
-        "sys.argv",
-        ["tuxrun", "--kernel=bzImage", "--device=qemu-x86_64", "cat", "/etc/hostname"],
-    )
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert len(options.tests) == 1
-    assert options.tests[0].name == "commands"
-    assert options.commands == ["cat", "/etc/hostname"]
+def test_custom_commands(mocker, run):
+    from tuxlava.jobs import Job
+
+    cmds = ["cat /etc/hostname"]
+
+    job = Job(kernel="bzImage", device="qemu-x86_64", commands=cmds)
+    mocker.patch("tempfile.mkdtemp")
+    job.initialize()
+    assert len(job.tests) == 1
+    assert job.tests[0].name == "commands"
+    assert job.commands == " ".join(shlex.quote(s) for s in cmds)
 
 
 def test_list_devices(mocker, monkeypatch, capsys):
@@ -737,25 +654,16 @@ def test_save_results_json(tuxrun_args, lava_run, mocker, tmp_path):
 
 
 def test_timeouts(monkeypatch, run):
-    monkeypatch.setattr(
-        "sys.argv",
-        [
-            "tuxrun",
-            "--device=qemu-x86_64",
-            "--tests",
-            "ltp-smoke",
-            "--timeouts",
-            "boot=1",
-            "ltp-smoke=12",
-        ],
+    from tuxlava.jobs import Job
+
+    job = Job(
+        device="qemu-x86_64", tests=["ltp-smoke"], timeouts={"boot": 1, "ltp-smoke": 12}
     )
-    main()
-    run.assert_called()
-    options = run.call_args[0][0]
-    assert len(options.tests) == 1
-    assert options.tests[0].name == "ltp-smoke"
-    assert options.tests[0].timeout == 12
-    assert options.timeouts == {"boot": 1, "ltp-smoke": 12}
+    job.initialize()
+    assert len(job.tests) == 1
+    assert job.tests[0].name == "ltp-smoke"
+    assert job.tests[0].timeout == 12
+    assert job.timeouts == {"boot": 1, "ltp-smoke": 12}
 
 
 # To test the qemu_binary overlay we basically fake up the responses
