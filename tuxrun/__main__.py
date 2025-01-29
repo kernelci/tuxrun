@@ -333,7 +333,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     if options.device.flag_use_pre_run_cmd or options.qemu_image:
         LOG.debug("Pre run command")
         runtime.bind(
-            tmpdir / "dispatcher" / "tmp", options.dispatcher_download_dir / "tmp"
+            tmpdir / "dispatcher" / "tmp",
+            options.dispatcher_download_dir,
         )
         (tmpdir / "dispatcher" / "tmp").mkdir()
         runtime.pre_run(tmpdir)

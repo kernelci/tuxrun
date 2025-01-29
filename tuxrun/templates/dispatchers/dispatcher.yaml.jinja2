@@ -2,8 +2,8 @@ dispatcher_download_dir: "{{ dispatcher_download_dir }}"
 
 # Prefix for all temporary directories
 # If this variable is set, the temporary files will be created in
-# <dispatcher_download_dir>/tmp/<prefix><job_id> instead of
-# <dispatcher_download_dir>/tmp/<job_id>
+# <dispatcher_download_dir>/<prefix><job_id> instead of
+# <dispatcher_download_dir>/<job_id>
 prefix: "{{ prefix }}-"
 
 # Set this variable when using http caching service based on url substitution
