@@ -46,7 +46,7 @@ def main():
                 skip = False
                 continue
             if sys.argv[index] in ["-v", "--volume"] and sys.argv[index + 1].startswith(
-                f"{dispatcher_download_dir}"
+                f"{dispatcher_download_dir}/"
             ):
                 skip = True
                 path = sys.argv[index + 1].replace(
