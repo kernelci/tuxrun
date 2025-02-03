@@ -58,6 +58,10 @@ tuxrun --device qemu-arm64 --kernel /path/to/Image
 TuxRun will automatically start qemu-system with the right arguments and the
 right root filesystem.
 
+# TuxLAVA Library
+
+TuxRun uses [TuxLAVA](https://gitlab.com/Linaro/tuxlava) library to generate LAVA job definition files.
+
 # Known issues
 
 Known issues when booting on different virtual platforms.
