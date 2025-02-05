@@ -36,3 +36,15 @@ tags:
 	ctags -R $(PROJECT)/ test/
 
 release: integration
+
+
+rpm-sanity-check-prepare::
+	printf '[tuxlava]\nname=tuxlava\ntype=rpm-md\nbaseurl=https://tuxlava.org/packages/\ngpgcheck=1\ngpgkey=https://tuxlava.org/packages/repodata/repomd.xml.key\nenabled=1\n' > /etc/yum.repos.d/tuxlava.repo
+
+deb-sanity-check-prepare::
+	apt-get update
+	apt-get install -qy ca-certificates
+	/usr/lib/apt/apt-helper download-file https://tuxlava.org/packages/signing-key.gpg /etc/apt/trusted.gpg.d/tuxlava.gpg
+	echo 'deb https://tuxlava.org/packages/ ./' > /etc/apt/sources.list.d/tuxlava.list
+	echo 'deb http://deb.debian.org/debian bookworm contrib' > /etc/apt/sources.list.d/contrib.list
+	apt-get update
