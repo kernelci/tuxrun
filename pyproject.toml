@@ -15,6 +15,7 @@ requires = [
     "requests",
     "PyYAML",
     "ruamel.yaml",
+    "tuxlava",
 ]
 
 [tool.flit.scripts]

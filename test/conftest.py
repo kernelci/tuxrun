@@ -1,4 +1,7 @@
 import pytest
+import sys
+
+sys.path.append("/usr/share/tuxlava")
 
 
 @pytest.fixture(autouse=True)
