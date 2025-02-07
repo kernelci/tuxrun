@@ -2,7 +2,7 @@ FROM fedora
 ARG EXTRA_PACKAGES
 
 COPY Makefile *.spec /tuxpkg/
-RUN dnf install -y dnf-plugins-core rpm-build ${EXTRA_PACKAGES} \
+RUN dnf install -y make dnf-plugins-core rpm-build ${EXTRA_PACKAGES} \
     && make -C /tuxpkg rpm-sanity-check-prepare \
     && dnf builddep -y /tuxpkg/*.spec
 
