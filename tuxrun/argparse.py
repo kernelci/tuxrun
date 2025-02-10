@@ -117,6 +117,16 @@ class KeyValueAction(argparse.Action):
             getattr(namespace, self.dest)[key] = value
 
 
+class KeyValueParameterAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        for value in values:
+            key, value = value.split("=", maxsplit=1)
+            if key in ["KSELFTEST"]:
+                if not "$BUILD/" in value:
+                    value = pathurlnone(value)
+            getattr(namespace, self.dest)[key] = value
+
+
 class KeyValueIntAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         KEYS = ["deploy", "boot"] + Test.list()
@@ -332,7 +342,7 @@ def setup_parser() -> argparse.ArgumentParser:
         default={},
         type=str,
         help="test parameters as key=value",
-        action=KeyValueAction,
+        action=KeyValueParameterAction,
         nargs="+",
     )
     group.add_argument(
