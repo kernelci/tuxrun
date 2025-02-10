@@ -113,8 +113,8 @@ class ListTestsAction(argparse.Action):
 class KeyValueAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         for value in values:
-            key, *value = value.split("=")
-            getattr(namespace, self.dest)[key] = "=".join(value)
+            key, value = value.split("=", maxsplit=1)
+            getattr(namespace, self.dest)[key] = value
 
 
 class KeyValueIntAction(argparse.Action):
