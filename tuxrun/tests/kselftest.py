@@ -595,6 +595,12 @@ class KSelftestSignal(KSelfTest):
     timeout = 5
 
 
+# Old name, was changed to signal in kernels >= v6.12.
+class KSelftestSigaltstack(KSelfTest):
+    name = "kselftest-sigaltstack"
+    timeout = 5
+
+
 class KSelftestSize(KSelfTest):
     name = "kselftest-size"
     timeout = 5
