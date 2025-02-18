@@ -430,6 +430,13 @@ def main() -> int:
                     options.parameters[k] = options.parameters[k].replace(
                         "$BUILD/", tux.url + "/"
                     )
+    else:
+        for k in options.parameters:
+            if isinstance(options.parameters[k], str):
+                if "$BUILD/" in options.parameters[k]:
+                    parser.error(
+                        "parameter with '$BUILD/' substitution requires --tuxbuild or --tuxmake"
+                    )
 
     if options.shell:
         if "hacking-session" not in options.tests:
