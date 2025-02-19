@@ -122,7 +122,7 @@ class KeyValueParameterAction(argparse.Action):
         for value in values:
             key, value = value.split("=", maxsplit=1)
             if key in ["KSELFTEST"]:
-                if not "$BUILD/" in value:
+                if "$BUILD/" not in value:
                     value = pathurlnone(value)
             getattr(namespace, self.dest)[key] = value
 
