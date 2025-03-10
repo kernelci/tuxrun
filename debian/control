@@ -28,6 +28,7 @@ Depends: python3 (>= 3.6),
          python3-yaml,
          ${misc:Depends},
          ${python3:Depends},
+         tuxlava,
 Description: command line tool for testing Linux with curated test suites
  TuxRun, is a command line tool for testing Linux on QEMU or FVP, using curated
  test suites.  TuxRun is a part of TuxSuite, a suite of tools and services to
