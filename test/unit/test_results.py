@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from tuxrun.results import Results
-from tuxrun.tests import Test
+from tuxlava.tests import Test  # type: ignore
 
 BASE = (Path(__file__) / "..").resolve()
 

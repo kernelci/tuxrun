@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from tuxrun.assets import get_rootfs
-from tuxrun.devices import Device
+from tuxlava.devices import Device  # type: ignore
 
 seven_hours = 7 * 60 * 60
 
