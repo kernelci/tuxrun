@@ -62,25 +62,6 @@ class TTYProgressIndicator(ProgressIndicator):
         sys.stderr.write("\n")
 
 
-COMPRESSIONS = {
-    ".tar.xz": ("tar", "xz"),
-    ".tar.gz": ("tar", "gz"),
-    ".tgz": ("tar", "gz"),
-    ".gz": (None, "gz"),
-    ".xz": (None, "xz"),
-    ".zst": (None, "zstd"),
-    ".py": ("file", None),
-    ".sh": ("file", None),
-}
-
-
-def compression(path):
-    for ext, ret in COMPRESSIONS.items():
-        if path.endswith(ext):
-            return ret
-    return (None, None)
-
-
 def notnone(value, fallback):
     if value is None:
         return fallback
@@ -128,16 +109,6 @@ def pathurlnone(string):
     if not path.exists():
         raise argparse.ArgumentTypeError(f"{path} no such file or directory")
     return f"file://{path.expanduser().resolve()}"
-
-
-def pathnone(string):
-    if string is None:
-        return None
-
-    path = Path(string)
-    if not path.exists():
-        raise argparse.ArgumentTypeError(f"{path} no such file or directory")
-    return path.expanduser().resolve()
 
 
 def callback(dataset=None, header=None, method=None, token=None, url=None, **kwargs):

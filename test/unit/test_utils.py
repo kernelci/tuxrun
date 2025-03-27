@@ -10,7 +10,6 @@ from tuxrun.utils import (
     mask_secrets,
     notify,
     notnone,
-    pathnone,
     pathurlnone,
 )
 from tuxrun.yaml import yaml_load
@@ -41,15 +40,6 @@ def test_pathurlnone():
 
     with pytest.raises(ArgumentTypeError) as exc:
         pathurlnone("file:///should-not-exists")
-    assert exc.match("/should-not-exists no such file or directory")
-
-
-def test_pathnone():
-    assert pathnone(None) is None
-    assert pathnone(__file__) == Path(__file__).expanduser().resolve()
-
-    with pytest.raises(ArgumentTypeError) as exc:
-        pathnone("/should-not-exists")
     assert exc.match("/should-not-exists no such file or directory")
 
 
