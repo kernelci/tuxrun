@@ -30,7 +30,7 @@ ci-image-integration:
   variables:
     DOCKER_DRIVER: overlay2
   script:
-  - 'docker build -t $CI_REGISTRY_IMAGE/ci-integration -f Dockerfile.ci-integration .'
+  - 'docker build --network host -t $CI_REGISTRY_IMAGE/ci-integration -f Dockerfile.ci-integration .'
   - 'docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY'
   - 'docker push $CI_REGISTRY_IMAGE/ci-integration'
   only:
@@ -57,7 +57,7 @@ ci-image-integration:
     - export tag="linaro/tuxrun-dispatcher:${CI_COMMIT_TAG}${TAG_APPEND}"
     - export latest="linaro/tuxrun-dispatcher:latest${TAG_APPEND}"
   script:
-    - docker build --pull --tag "${tag}" --tag "${latest}" -f Dockerfile.tuxrun-dispatcher .
+    - docker build --network host --pull --tag "${tag}" --tag "${latest}" -f Dockerfile.tuxrun-dispatcher .
     - docker push "${tag}"
     - docker push "${latest}"
   variables:
@@ -87,7 +87,7 @@ docker-arm64:
   variables:
     IMAGE_NAME: "linaro/tuxrun-dispatcher:master"
   script:
-    - docker build --pull --tag "${IMAGE_NAME}${TAG_APPEND}" -f Dockerfile.tuxrun-dispatcher .
+    - docker build --network host --pull --tag "${IMAGE_NAME}${TAG_APPEND}" -f Dockerfile.tuxrun-dispatcher .
     - docker push "${IMAGE_NAME}${TAG_APPEND}"
   only:
     - master
