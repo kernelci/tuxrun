@@ -26,10 +26,12 @@ class Results:
         self.__post_processed = False
         self.__tests__ = ["lava"] + [t.name for t in tests]
         self.__ret__ = 0
+        self.__log_lines__ = []
 
     def parse(self, line):
         try:
             data = yaml_load(line)
+            self.__log_lines__.append(data)
         except yaml.YAMLError:
             LOG.debug(line)
             return
@@ -67,6 +69,34 @@ class Results:
                 )
         else:
             self.__data__.setdefault(definition, {})[case] = test
+            self.__log_lines__.pop()
+            if "starttc" in test and "endtc" in test:
+                # Search backwards for <LAVA_SIGNAL_STARTTC marker
+                excerpt = []
+                if test["starttc"] == test["endtc"]:
+                    case_id = case
+                    # Include all lines matching the LAVA_SIGNAL_TESTCASE pattern
+                    for entry in reversed(self.__log_lines__):
+                        msg = entry.get("msg", "")
+                        if (
+                            "LAVA_SIGNAL_TESTCASE" in msg
+                            and f"TEST_CASE_ID={case_id}" in msg
+                        ):
+                            excerpt.append(f"[{entry['dt']}] {msg}")
+                        if "<LAVA_SIGNAL_STARTTC" in msg:
+                            break
+                else:
+                    # Search backwards for <LAVA_SIGNAL_STARTTC marker
+                    for entry in reversed(self.__log_lines__):
+                        msg = entry.get("msg", "")
+                        excerpt.append(f"[{entry['dt']}] {msg}")
+                        if "<LAVA_SIGNAL_STARTTC" in msg:
+                            break
+
+                excerpt.reverse()
+                self.__data__[definition][case]["log_excerpt"] = excerpt
+                self.__log_lines__.clear()
+
         if test["result"] == "fail":
             self.__ret__ = 1
 
