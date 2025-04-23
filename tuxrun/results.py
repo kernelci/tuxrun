@@ -31,13 +31,13 @@ class Results:
     def parse(self, line):
         try:
             data = yaml_load(line)
-            self.__log_lines__.append(data)
         except yaml.YAMLError:
             LOG.debug(line)
             return
         if not data or not isinstance(data, dict):
             LOG.debug(line)
             return
+        self.__log_lines__.append(data)
         if data.get("lvl") != "results":
             return
 
