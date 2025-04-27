@@ -132,16 +132,32 @@ def notify(notify):
 def mask_secrets(jobdef: str) -> str:
     data = yaml_load(jobdef)
 
+    def replace_headers(d):
+        if isinstance(d, dict):
+            for key, value in d.items():
+                # 'UrlRepoAction' adds 'url' as an alias to 'repository' for
+                # reusing the 'HttpDownloadAction'.
+                if key in ["url", "repository"] and isinstance(d.get("headers"), dict):
+                    for header_key in d["headers"]:
+                        d["headers"][header_key] = "********"
+                else:
+                    replace_headers(value)
+        elif isinstance(d, list):
+            for item in d:
+                replace_headers(item)
+
+    # Mask secrets if they exist
     if "secrets" in data:
         for secret in data["secrets"]:
             data["secrets"][secret] = "********"
 
-        yaml = YAML(typ="rt")
-        yaml.preserve_quotes = True  # type: ignore
-        yaml_stream = StringIO()
+    # Mask headers anywhere in the structure
+    replace_headers(data)
 
-        yaml.dump(data, yaml_stream)
-        masked_jobdef = yaml_stream.getvalue()
-        return masked_jobdef
+    yaml = YAML(typ="rt")
+    yaml.preserve_quotes = True  # type: ignore
+    yaml_stream = StringIO()
 
-    return jobdef
+    yaml.dump(data, yaml_stream)
+    masked_jobdef = yaml_stream.getvalue()
+    return masked_jobdef
