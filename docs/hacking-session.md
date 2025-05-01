@@ -3,8 +3,15 @@
 With a hacking session the user can connect to the device via tmate session.
 
 ```
-tuxrun --runtime podman --device qemu-arm64 --boot-args rw --rootfs https://storage.tuxboot.com/debian/bookworm/arm64/rootfs.ext4.xz --test hacking-session --parameters PUB_KEY="$(cat ~/.ssh/id_rsa.pub )"
+tuxrun \
+  --runtime podman \
+  --device qemu-arm64 \
+  --boot-args "rw" \
+  --rootfs https://storage.tuxboot.com/debian/bookworm/arm64/rootfs.ext4.xz \
+  --tests hacking-session \
+  --parameters PUB_KEY="$(cat ~/.ssh/id_rsa.pub)"
 ```
+Note: Make sure to have an SSH public key available at `~/.ssh/id_rsa.pub` or adjust path accordingly.
 
 The output will look something like this:
 ```
