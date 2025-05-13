@@ -177,6 +177,9 @@ class DockerRuntime(ContainerRuntime):
         # Bind the docker socket
         self.bind("/var/run/docker.sock")
 
+        # Bind /tmp
+        self.bind("/tmp")
+
 
 class PodmanRuntime(ContainerRuntime):
     binary = "podman"
@@ -207,6 +210,9 @@ class PodmanRuntime(ContainerRuntime):
         # Start podman system service and bind the socket
         socket = tmpdir / "podman.sock"
         self.bind(socket, "/run/podman/podman.sock")
+
+        # Bind /tmp
+        self.bind("/tmp")
 
         args = [
             self.binary,

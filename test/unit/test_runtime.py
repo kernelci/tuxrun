@@ -111,6 +111,12 @@ def test_pre_run_docker(tmp_path):
     runtime = Runtime.select("docker")(tmp_path)
     runtime.pre_run(tmp_path)
     assert runtime.__bindings__[-1] == (
+        "/tmp",
+        "/tmp",
+        False,
+        False,
+    )
+    assert runtime.__bindings__[-2] == (
         "/var/run/docker.sock",
         "/var/run/docker.sock",
         False,
