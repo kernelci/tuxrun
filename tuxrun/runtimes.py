@@ -210,6 +210,8 @@ class PodmanRuntime(ContainerRuntime):
         # Start podman system service and bind the socket
         socket = tmpdir / "podman.sock"
         self.bind(socket, "/run/podman/podman.sock")
+        # mount podman.sock as docker.sock which can be used when required
+        self.bind(socket, "/var/run/docker.sock")
 
         # Bind /tmp
         self.bind("/tmp")
