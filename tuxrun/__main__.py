@@ -274,6 +274,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     runtime = Runtime.select(options.runtime)(options.dispatcher_download_dir)
     runtime.name(tmpdir.name)
     runtime.image(options.image)
+    runtime.qemu_image = options.qemu_image
 
     runtime.bind(tmpdir)
     for path in [

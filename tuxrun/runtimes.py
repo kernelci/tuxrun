@@ -25,6 +25,7 @@ class Runtime:
 
     def __init__(self, dispatcher_download_dir):
         self.dispatcher_download_dir = dispatcher_download_dir
+        self.qemu_image = None
         self.__bindings__ = []
         self.__image__ = None
         self.__name__ = None
@@ -186,8 +187,9 @@ class PodmanRuntime(ContainerRuntime):
     def pre_run(self, tmpdir):
         # Render and bind the docker wrapper
         self.network = os.path.basename(tmpdir)
-        self.prefix.extend(["--network", self.network])
         subprocess.run(["podman", "network", "create", self.network])
+        if self.qemu_image is None:
+            self.prefix.extend(["--network", self.network])
         wrap = (
             wrappers()
             .get_template("docker.jinja2")
