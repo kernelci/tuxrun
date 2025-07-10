@@ -1,5 +1,5 @@
 include:
-  - https://gitlab.com/Linaro/tuxpkg/-/raw/main/gitlab-ci-pipeline.yml
+  - https://gitlab.com/Linaro/tuxpkg/-/raw/v0.16.0/gitlab-ci-pipeline.yml
   - template: Security/SAST.gitlab-ci.yml
 
 variables:
