@@ -19,6 +19,6 @@ prefix: "{{ prefix }}-"
 # 3rd item: bind mount mode (optional)
 #           default is read-only if this item omitted
 #           set as "rw" could make the directory in container writeable
-#test_docker_bind_mounts:
-#- [<bind-mount1-host-path>, <bind-mount1-container-path>]
-#- [<bind-mount2-host-path>, <bind-mount2-container-path>, "rw"]
+test_docker_bind_mounts:
+- ["/tmp/{{ prefix }}/podman.sock", "/var/run/docker.sock"]
+- ["/tmp", "/tmp", "rw"]
