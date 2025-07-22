@@ -7,4 +7,4 @@
 """
 Command line tool for testing Linux under QEMU
 """
-__version__ = "1.3.0"
+__version__ = "1.3.1"
