@@ -16,6 +16,7 @@ Build-Depends: bash-completion,
                python3-pytest,
                python3-pytest-cov,
                python3-pytest-mock,
+               pybuild-plugin-pyproject,
                tuxlava,
 Standards-Version: 4.6.0.1
 Homepage: https://tuxrun.org/
