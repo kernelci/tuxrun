@@ -451,6 +451,13 @@ def main() -> int:
         return run(options, tmpdir, cache_dir, artefacts)
     except TuxLavaException as exc:
         parser.error(str(exc))
+    except FileNotFoundError as exc:
+        err_msg = (
+            f"Dependency not installed: {exc.filename}"
+            if exc.filename in ["docker", "podman", "lava-run"]
+            else str(exc)
+        )
+        parser.error(err_msg)
     except Exception as exc:
         LOG.error("Raised an exception %s", exc)
         raise
