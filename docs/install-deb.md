@@ -1,27 +1,44 @@
 # Installing TuxRun via Debian packages
 
 TuxRun provides Debian packages that have minimal dependencies, and should
-work on any Debian or Debian-based (Ubuntu, etc) system.
+work on any Debian or Debian-based (Ubuntu, etc) system. TuxRun
+depends on TuxLAVA, hence TuxLAVA repositories should be explicitly
+added to install TuxRun.
 
-1) Download the [repository signing key](https://tuxrun.org/packages/signing-key.gpg)
-and save it to `/etc/apt/trusted.gpg.d/tuxrun.gpg`.
-
-```
-# wget -O /etc/apt/trusted.gpg.d/tuxrun.gpg \
-  https://tuxrun.org/packages/signing-key.gpg
-```
-
-2) Create /etc/apt/sources.list.d/tuxrun.list with the following contents:
+1) Download the [repository signing
+key](https://tuxlava.org/packages/signing-key.gpg) for TuxLAVA and
+save it to `/etc/apt/trusted.gpg.d/tuxlava.gpg`, since TuxRun depends
+on TuxLAVA.
 
 ```
-deb https://tuxrun.org/packages/ ./
+sudo wget -O /etc/apt/trusted.gpg.d/tuxlava.gpg https://tuxlava.org/packages/signing-key.gpg
 ```
 
-3) Install `tuxrun` as you would any other package:
+2) Create apt sources list for tuxlava packages:
 
 ```
-# apt update
-# apt install tuxrun
+echo "deb https://tuxlava.org/packages/ ./" | sudo tee /etc/apt/sources.list.d/tuxlava.list
+```
+
+3) Download the [repository signing
+key](https://tuxrun.org/packages/signing-key.gpg) for TuxRun and save
+it to `/etc/apt/trusted.gpg.d/tuxrun.gpg`.
+
+```
+sudo wget -O /etc/apt/trusted.gpg.d/tuxrun.gpg https://tuxrun.org/packages/signing-key.gpg
+```
+
+4) Create apt sources list for tuxrun packages:
+
+```
+echo "deb https://tuxrun.org/packages/ ./" | sudo tee /etc/apt/sources.list.d/tuxrun.list
+```
+
+5) Install `tuxrun` as you would any other package:
+
+```
+sudo apt update
+sudo apt install tuxrun
 ```
 
 Upgrading tuxrun will work just like it would for any other package (`apt
