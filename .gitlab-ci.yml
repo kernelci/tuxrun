@@ -55,7 +55,7 @@ ci-image-integration:
     - export tag="linaro/tuxrun-dispatcher:${CI_COMMIT_TAG}${TAG_APPEND}"
     - export latest="linaro/tuxrun-dispatcher:latest${TAG_APPEND}"
   script:
-    - docker build --network host --pull --build-arg LAVA_ARCH=${LAVA_ARCH} --tag "${tag}" --tag "${latest}" -f Dockerfile.tuxrun-dispatcher .
+    - docker build --network host --pull --build-arg HOST_ARCH=${HOST_ARCH} --build-arg LAVA_ARCH=${LAVA_ARCH} --tag "${tag}" --tag "${latest}" -f Dockerfile.tuxrun-dispatcher .
     - docker push "${tag}"
     - docker push "${latest}"
   variables:
@@ -66,6 +66,7 @@ docker-amd64:
   stage: build
   variables:
     TAG_APPEND: -amd64
+    HOST_ARCH: amd64
     LAVA_ARCH: amd64
   only:
     - tags
@@ -77,6 +78,7 @@ docker-arm64:
      - saas-linux-medium-arm64
   variables:
     TAG_APPEND: -arm64
+    HOST_ARCH: arm64
     LAVA_ARCH: aarch64
   only:
     - tags
@@ -87,7 +89,7 @@ docker-arm64:
   variables:
     IMAGE_NAME: "linaro/tuxrun-dispatcher:master"
   script:
-    - docker build --network host --pull --build-arg LAVA_ARCH=${LAVA_ARCH} --tag "${IMAGE_NAME}${TAG_APPEND}" -f Dockerfile.tuxrun-dispatcher .
+    - docker build --network host --pull --build-arg HOST_ARCH=${HOST_ARCH} --build-arg LAVA_ARCH=${LAVA_ARCH} --tag "${IMAGE_NAME}${TAG_APPEND}" -f Dockerfile.tuxrun-dispatcher .
     - docker push "${IMAGE_NAME}${TAG_APPEND}"
   only:
     - master
@@ -97,6 +99,7 @@ docker-master-amd64:
   stage: build
   variables:
     TAG_APPEND: -amd64
+    HOST_ARCH: amd64
     LAVA_ARCH: amd64
 
 docker-master-arm64:
@@ -106,6 +109,7 @@ docker-master-arm64:
      - saas-linux-medium-arm64
   variables:
     TAG_APPEND: -arm64
+    HOST_ARCH: arm64
     LAVA_ARCH: aarch64
 
 publish-dockerhub:

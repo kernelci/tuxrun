@@ -1,5 +1,6 @@
 ARG LAVA_ARCH=amd64
 FROM registry.gitlab.com/lava/lava/${LAVA_ARCH}/lava-dispatcher:2025.06.dev0075
+ARG HOST_ARCH=amd64
 ARG EXTRA_PACKAGES
 
 RUN echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries
@@ -7,6 +8,11 @@ RUN echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries
 RUN apt-get update && \
     apt-get install --no-install-recommends --yes gnupg && \
     apt-get install --yes libgpgme11-dev podman ${EXTRA_PACKAGES} && \
+    mv /usr/bin/run-parts /usr/bin/run-parts.real && \
+    echo '#!/bin/sh\nexit 0' > /usr/bin/run-parts && \
+    chmod +x /usr/bin/run-parts && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes linux-image-cloud-${HOST_ARCH} && \
+    mv /usr/bin/run-parts.real /usr/bin/run-parts && \
     echo "deb     http://ftp.de.debian.org/debian/    testing main contrib non-free" > /etc/apt/sources.list.d/testing.list && \
     echo "deb-src http://ftp.de.debian.org/debian/    testing main contrib non-free" >> /etc/apt/sources.list.d/testing.list && \
     apt-get update && \
