@@ -49,15 +49,13 @@ ci-image-integration:
   - name: docker:20.10-dind
   variables:
   before_script:
-    # FIXME: We are using hack to build aarch64 container since lava-distcher from gitlab pipelin
-    # for LAVA project is not multiarch
-    - if [ $TAG_APPEND == "-arm64" ]; then sed -i "s|amd64/lava-dispatcher|aarch64/lava-dispatcher|g" Dockerfile.tuxrun-dispatcher; fi
+    # Map Debian arch naming (arm64) to LAVA arch naming (aarch64)
     - docker info
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - export tag="linaro/tuxrun-dispatcher:${CI_COMMIT_TAG}${TAG_APPEND}"
     - export latest="linaro/tuxrun-dispatcher:latest${TAG_APPEND}"
   script:
-    - docker build --network host --pull --tag "${tag}" --tag "${latest}" -f Dockerfile.tuxrun-dispatcher .
+    - docker build --network host --pull --build-arg LAVA_ARCH=${LAVA_ARCH} --tag "${tag}" --tag "${latest}" -f Dockerfile.tuxrun-dispatcher .
     - docker push "${tag}"
     - docker push "${latest}"
   variables:
@@ -68,6 +66,7 @@ docker-amd64:
   stage: build
   variables:
     TAG_APPEND: -amd64
+    LAVA_ARCH: amd64
   only:
     - tags
 
@@ -78,6 +77,7 @@ docker-arm64:
      - saas-linux-medium-arm64
   variables:
     TAG_APPEND: -arm64
+    LAVA_ARCH: aarch64
   only:
     - tags
 
@@ -87,7 +87,7 @@ docker-arm64:
   variables:
     IMAGE_NAME: "linaro/tuxrun-dispatcher:master"
   script:
-    - docker build --network host --pull --tag "${IMAGE_NAME}${TAG_APPEND}" -f Dockerfile.tuxrun-dispatcher .
+    - docker build --network host --pull --build-arg LAVA_ARCH=${LAVA_ARCH} --tag "${IMAGE_NAME}${TAG_APPEND}" -f Dockerfile.tuxrun-dispatcher .
     - docker push "${IMAGE_NAME}${TAG_APPEND}"
   only:
     - master
@@ -97,6 +97,7 @@ docker-master-amd64:
   stage: build
   variables:
     TAG_APPEND: -amd64
+    LAVA_ARCH: amd64
 
 docker-master-arm64:
   extends: .docker-master
@@ -105,6 +106,7 @@ docker-master-arm64:
      - saas-linux-medium-arm64
   variables:
     TAG_APPEND: -arm64
+    LAVA_ARCH: aarch64
 
 publish-dockerhub:
   extends: .docker
