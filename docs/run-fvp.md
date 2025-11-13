@@ -7,39 +7,12 @@ TuxRun allows to run linux kernel under FVP for Morello and AEMvA.
 
 ## Preparing the environment
 
-In order to use TuxRun with FVP, you have to build container images:
+TuxRun uses the official [shrinkwrap](https://gitlab.arm.com/tooling/shrinkwrap) FVP container images from Docker Hub. The images will be automatically pulled when you run FVP tests.
 
-* AEMvA fvp model
-* morello fvp model
+The AEMvA FVP uses the `docker.io/shrinkwraptool/base-slim:latest` image which contains FVP Base RevC AEMvA version 11.29.
 
-Start by cloning the git repository:
-
-```shell
-git clone https://gitlab.com/Linaro/tuxrun
-cd tuxrun
-```
-
-### AEMvA fvp model
-
-Build the container containing the AEMvA FVP model:
-
-=== "podman"
-
-```shell
-cd share/fvp
-make fvp-aemva
-```
-
-=== "docker"
-
-```shell
-cd share/fvp
-make fvp-aemva RUNTIME=docker
-```
-
-> Warning: "Container tag"
-    The container should be named **fvp:aemva-11.28_23** in order for TuxRun
-    to work.
+> Note: "Image Download"
+    The first time you run an FVP test, the container image (~2GB) will be downloaded automatically. This may take some time depending on your internet connection.
 
 
 ### Morello fvp model
@@ -49,14 +22,16 @@ Build the container containing the Morello FVP model:
 === "podman"
 
 ```shell
-cd share/fvp
+git clone https://gitlab.com/Linaro/tuxrun
+cd tuxrun/share/fvp
 make fvp-morello
 ```
 
 === "docker"
 
 ```shell
-cd share/fvp
+git clone https://gitlab.com/Linaro/tuxrun
+cd tuxrun/share/fvp
 make fvp-morello RUNTIME=docker
 ```
 
