@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/lava/lava/amd64/lava-dispatcher:2025.06.dev0075
+FROM registry.gitlab.com/lava/lava/amd64/lava-dispatcher:2025.10.dev0104
 ARG EXTRA_PACKAGES
 
 RUN echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries
