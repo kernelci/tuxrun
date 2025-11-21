@@ -1,5 +1,5 @@
 ARG LAVA_ARCH=amd64
-FROM registry.gitlab.com/lava/lava/${LAVA_ARCH}/lava-dispatcher:2025.06.dev0075
+FROM registry.gitlab.com/lava/lava/${LAVA_ARCH}/lava-dispatcher:2025.10.dev0104
 ARG HOST_ARCH=amd64
 ARG EXTRA_PACKAGES
 
