@@ -59,6 +59,9 @@ class Runtime:
     def post_run(self):
         pass
 
+    def use_host_network(self):
+        pass
+
     def cmd(self, args):
         raise NotImplementedError()  # pragma: no cover
 
@@ -106,6 +109,8 @@ class Runtime:
 class ContainerRuntime(Runtime):
     bind_guestfs = True
     container = True
+    _use_host_network = False
+    _skip_http_server = False
 
     def __init__(self, dispatcher_download_dir):
         super().__init__(dispatcher_download_dir)
@@ -120,19 +125,29 @@ class ContainerRuntime(Runtime):
             guestfs.mkdir(exist_ok=True)
             self.bind(guestfs, "/var/tmp/.guestfs-0")
 
+    def use_host_network(self):
+        self._use_host_network = True
+
+    def skip_http_server(self):
+        self._skip_http_server = True
+
     def cmd(self, args):
         prefix = self.prefix.copy()
-        srcs = set()
+        if self._use_host_network:
+            prefix.extend(["--network", "host"])
+        if self._skip_http_server:
+            # Override entrypoint to skip the HTTP server that conflicts with
+            # host services when using --network=host
+            prefix.extend(["--entrypoint", "/usr/bin/lava-run"])
+            # When entrypoint is lava-run, args should be its arguments, not include the command
+            if args and args[0] == "lava-run":
+                args = args[1:]
         dsts = set()
         for binding in self.__bindings__:
             (src, dst, ro, device) = binding
-            if src in srcs:
-                LOG.error("Duplicated mount source %r", src)
-                raise Exception("Duplicated mount source %r" % src)
             if dst in dsts:
                 LOG.error("Duplicated mount destination %r", dst)
                 raise Exception("Duplicated mount destination %r" % dst)
-            srcs.add(src)
             dsts.add(dst)
             ro = "ro" if ro else "rw"
             prefix.extend(["--device" if device else "-v", f"{src}:{dst}:{ro}"])
