@@ -37,6 +37,7 @@ from tuxrun.utils import (  # noqa: E402
 from tuxrun.writer import Writer  # noqa: E402
 from tuxrun.yaml import yaml_load  # noqa: E402
 
+from tuxlava.devices import Device  # type: ignore  # noqa: E402
 from tuxlava.jobs import Job  # type: ignore  # noqa: E402
 from tuxlava.exceptions import TuxLavaException  # type: ignore # noqa: E402
 
@@ -188,6 +189,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "fip": options.fip,
         "job_definition": options.job_definition,
         "kernel": options.kernel,
+        "device_dict": options.device_dict,
         "mcp_fw": options.mcp_fw,
         "mcp_romfw": options.mcp_romfw,
         "modules": options.modules,
@@ -250,7 +252,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     if options.fvp_ubl_license:
         context["fvp_ubl_license"] = options.fvp_ubl_license
 
-    device_dict = job.device.device_dict(context)
+    device_dict = job.device.device_dict(context, d_dict_config=job.d_dict_config)
     LOG.debug("device dictionary")
     LOG.debug(device_dict)
 
@@ -259,11 +261,18 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
 
     # Render the dispatcher.yaml
     (tmpdir / "dispatcher").mkdir()
+    # For device dict mode, get dispatcher_ip from --parameters
+    dispatcher_ip = None
+    if options.device_dict:
+        dispatcher_ip = options.parameters.get("DISPATCHER_IP")
     dispatcher = (
         templates.dispatchers()
         .get_template("dispatcher.yaml.jinja2")
         .render(
-            dispatcher_download_dir=options.dispatcher_download_dir, prefix=tmpdir.name
+            dispatcher_download_dir=options.dispatcher_download_dir,
+            prefix=tmpdir.name,
+            d_dict_mode=bool(options.device_dict),
+            dispatcher_ip=dispatcher_ip,
         )
     )
     LOG.debug("dispatcher config")
@@ -303,6 +312,35 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     if job.qemu_binary:
         overlay_qemu(job.qemu_binary, tmpdir, runtime)
 
+    # Device dict mode: When --device-dict is provided. Requires
+    # host networking and access to device control binaries.
+    if options.device_dict:
+        runtime.use_host_network()
+        runtime.skip_http_server()
+        # Bind volumes from docker_shell_extra_arguments in device dict config
+        if job.d_dict_config:
+            extra_args = job.d_dict_config.get("docker_shell_extra_arguments", [])
+            for arg in extra_args:
+                if arg.startswith("--volume="):
+                    # Parse --volume=/host/path:/container/path:ro
+                    volume_spec = arg[len("--volume=") :]
+                    parts = volume_spec.split(":")
+                    if len(parts) >= 2:
+                        host_path = Path(parts[0])
+                        container_path = Path(parts[1])
+                        ro = len(parts) > 2 and parts[2] == "ro"
+                        if host_path.exists():
+                            runtime.bind(host_path, container_path, ro=ro)
+        # Also support --parameters DEVICE_CONTROL_BINARIES for backwards compat
+        control_binaries_param = options.parameters.get("DEVICE_CONTROL_BINARIES", "")
+        control_binaries = (
+            control_binaries_param.split(",") if control_binaries_param else []
+        )
+        for path in control_binaries:
+            path = path.strip()
+            if path and Path(path).exists():
+                runtime.bind(Path(path), Path(path), ro=True)
+
     # Forward the signal to the runtime
     def handler(*_):
         LOG.debug("Signal received")
@@ -320,14 +358,16 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     LOG.debug("Job timeout %ds", job_timeout)
     signal.alarm(job_timeout)
 
-    # start the pre_run command
-    if job.device.flag_use_pre_run_cmd or job.qemu_image:
+    # Start the pre_run command
+    if job.device.flag_use_pre_run_cmd or job.qemu_image or options.device_dict:
         LOG.debug("Pre run command")
-        runtime.bind(
-            tmpdir / "dispatcher" / "tmp",
-            options.dispatcher_download_dir,
-        )
-        (tmpdir / "dispatcher" / "tmp").mkdir()
+        if options.device_dict:
+            # Device dict: bind host directory to /srv/tftp (LAVA TFTP) and dispatcher_download_dir (NFS)
+            runtime.bind(options.dispatcher_download_dir, Path("/srv/tftp"))
+            runtime.bind(options.dispatcher_download_dir, options.dispatcher_download_dir)
+        else:
+            runtime.bind(tmpdir / "dispatcher" / "tmp", options.dispatcher_download_dir)
+            (tmpdir / "dispatcher" / "tmp").mkdir()
         runtime.pre_run(tmpdir)
 
     # Build the lava-run arguments list
@@ -406,6 +446,16 @@ def main() -> int:
     if not options.device:
         if not (options.tuxmake or options.tuxbuild):
             parser.error("argument --device is required")
+
+    # Validate device choice unless --device-dict is provided
+    if options.device and not options.device_dict:
+        device_choices = [d.name for d in Device.list(virtual_device=True)]
+        device_choices = sorted(set(device_choices))
+        if options.device not in device_choices:
+            parser.error(
+                f"argument --device: invalid choice: '{options.device}' "
+                f"(choose from {', '.join(device_choices)})"
+            )
 
     if "hacking-session" in options.tests:
         options.enable_network = True
