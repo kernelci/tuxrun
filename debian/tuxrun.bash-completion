@@ -1,0 +1,50 @@
+# bash completion for tuxrun
+
+_tuxrun_devices() {
+    tuxrun --list-devices 2>/dev/null
+}
+
+_tuxrun_tests() {
+    tuxrun --list-tests 2>/dev/null
+}
+
+_tuxrun() {
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "${prev}" in
+        --device)
+            COMPREPLY=( $(compgen -W "$(_tuxrun_devices)" -- ${cur}) )
+            return 0
+            ;;
+        --tests)
+            COMPREPLY=( $(compgen -W "$(_tuxrun_tests)" -- ${cur}) )
+            return 0
+            ;;
+        --runtime)
+            COMPREPLY=( $(compgen -W "docker null podman" -- ${cur}) )
+            return 0
+            ;;
+        --device-dict|--kernel|--rootfs|--modules|--dtb|--overlay|--bios|--bl1|--fip|--uefi|--ssh-identity-file|--tuxmake|--log-file|--results|--metadata)
+            COMPREPLY=( $(compgen -f -- ${cur}) )
+            return 0
+            ;;
+        --cache-dir|--dispatcher-download-dir)
+            COMPREPLY=( $(compgen -d -- ${cur}) )
+            return 0
+            ;;
+        --tuxbuild|--test-definitions|--job-definition|--ap-romfw|--mcp-fw|--mcp-romfw|--scp-fw|--scp-romfw)
+            # URLs - no completion
+            return 0
+            ;;
+    esac
+
+    if [[ ${cur} == -* ]]; then
+        COMPREPLY=( $(compgen -W "--help --version --list-devices --list-tests --update-cache --device --device-dict --runtime --kernel --rootfs --modules --dtb --boot-args --prompt --tests --shell --enable-kvm --enable-trustzone --enable-network --save-outputs --cache-dir --dispatcher-download-dir --log-file --log-file-html --log-file-text --log-file-yaml --results --results-hook --lava-definition --shared --debug --image --qemu-image --qemu-binary --timeouts --parameters --secrets --tuxbuild --tuxmake --bios --bl1 --fip --uefi --ap-romfw --mcp-fw --mcp-romfw --scp-fw --scp-romfw --ssh-host --ssh-port --ssh-user --ssh-prompt --ssh-identity-file --test-definitions --job-definition --partition --fvp-ubl-license" -- ${cur}) )
+        return 0
+    fi
+}
+
+complete -F _tuxrun tuxrun
