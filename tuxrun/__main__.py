@@ -364,7 +364,9 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         if options.device_dict:
             # Device dict: bind host directory to /srv/tftp (LAVA TFTP) and dispatcher_download_dir (NFS)
             runtime.bind(options.dispatcher_download_dir, Path("/srv/tftp"))
-            runtime.bind(options.dispatcher_download_dir, options.dispatcher_download_dir)
+            runtime.bind(
+                options.dispatcher_download_dir, options.dispatcher_download_dir
+            )
         else:
             runtime.bind(tmpdir / "dispatcher" / "tmp", options.dispatcher_download_dir)
             (tmpdir / "dispatcher" / "tmp").mkdir()
