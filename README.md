@@ -2,13 +2,11 @@
   <img src="docs/tuxrun_full.svg" alt="TuxRun Logo" width="40%" />
 </div>
 
-[![Pipeline Status](https://gitlab.com/Linaro/tuxrun/badges/master/pipeline.svg)](https://gitlab.com/Linaro/tuxrun/pipelines)
-[![coverage report](https://gitlab.com/Linaro/tuxrun/badges/master/coverage.svg)](https://gitlab.com/Linaro/tuxrun/commits/master)
 [![PyPI version](https://badge.fury.io/py/tuxrun.svg)](https://pypi.org/project/tuxrun/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![PyPI - License](https://img.shields.io/pypi/l/tuxrun)](https://gitlab.com/Linaro/tuxrun/blob/master/LICENSE)
+[![PyPI - License](https://img.shields.io/pypi/l/tuxrun)](https://github.com/kernelci/tuxrun/blob/master/LICENSE)
 
-[Documentation](https://tuxrun.org/) - [Repository](https://gitlab.com/Linaro/tuxrun) - [Issues](https://gitlab.com/Linaro/tuxrun/-/issues)
+[Documentation](https://tuxrun.org/) - [Repository](https://github.com/kernelci/tuxrun) - [Issues](https://github.com/kernelci/tuxrun/issues)
 
 TuxRun, by [Linaro](https://www.linaro.org/), is a command line tool for
 testing Linux on the following virtual devices, using curated test suites.
@@ -19,8 +17,6 @@ testing Linux on the following virtual devices, using curated test suites.
 
 TuxRun is a part of [TuxSuite](https://tuxsuite.com), a suite of tools and
 services to help with Linux kernel development.
-
-[[_TOC_]]
 
 # About TuxRun
 
@@ -60,7 +56,7 @@ right root filesystem.
 
 # TuxLAVA Library
 
-TuxRun uses [TuxLAVA](https://gitlab.com/Linaro/tuxlava) library to generate LAVA job definition files.
+TuxRun uses [TuxLAVA](https://tuxlava.org) library to generate LAVA job definition files.
 
 # Known issues
 
