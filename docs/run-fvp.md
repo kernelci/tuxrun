@@ -22,7 +22,7 @@ Build the container containing the Morello FVP model:
 === "podman"
 
 ```shell
-git clone https://gitlab.com/Linaro/tuxrun
+git clone https://github.com/kernelci/tuxrun
 cd tuxrun/share/fvp
 make fvp-morello
 ```
@@ -30,7 +30,7 @@ make fvp-morello
 === "docker"
 
 ```shell
-git clone https://gitlab.com/Linaro/tuxrun
+git clone https://github.com/kernelci/tuxrun
 cd tuxrun/share/fvp
 make fvp-morello RUNTIME=docker
 ```
