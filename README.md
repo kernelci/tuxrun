@@ -18,6 +18,14 @@ testing Linux on the following virtual devices, using curated test suites.
 TuxRun is a part of [TuxSuite](https://tuxsuite.com), a suite of tools and
 services to help with Linux kernel development.
 
+## Table of Contents
+- [About TuxRun](#about-tuxrun)
+- [Installing TuxRun](#installing-tuxrun)
+- [Using TuxRun](#using-tuxrun)
+- [TuxLAVA Library](#tuxlava-library)
+- [Known issues](#known-issues)
+- [Examples](#examples)
+
 # About TuxRun
 
 Testing the Linux kernel is as simple as using QEMU but it gets complicated
