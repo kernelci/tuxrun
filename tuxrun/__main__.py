@@ -294,7 +294,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     ] + extra_assets:
         ro = True
         if isinstance(path, tuple):
-            (path, ro) = path
+            path, ro = path
         if not path:
             continue
         if urlparse(path).scheme == "file":
