@@ -15,9 +15,7 @@ def test_write_log_file(tmp_path):
         encoding="utf-8"
     ) == '{"lvl": "info", "msg": "Hello, world", "dt": "2021-04-08T18:42:25.139513"}\n'
 
-    assert (
-        html_file.read_text(encoding="utf-8")
-        == """<!DOCTYPE html>
+    assert html_file.read_text(encoding="utf-8") == """<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>TuxTest log</title>
@@ -40,7 +38,6 @@ def test_write_log_file(tmp_path):
 </pre>
 </body>
 </html>"""
-    )
     assert text_file.read_text(encoding="utf-8") == ""
 
 
@@ -70,9 +67,7 @@ def test_write_stdout_logs(capsys, tmp_path):
         yaml_file.read_text(encoding="utf-8")
         == """- {"lvl": "info", "msg": "Hello, world", "dt": "2021-04-08T18:42:25.139513"}\n"""
     )
-    assert (
-        html_file.read_text(encoding="utf-8")
-        == """<!DOCTYPE html>
+    assert html_file.read_text(encoding="utf-8") == """<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>TuxTest log</title>
@@ -95,7 +90,6 @@ def test_write_stdout_logs(capsys, tmp_path):
 </pre>
 </body>
 </html>"""
-    )
     assert text_file.read_text(encoding="utf-8") == ""
 
 
@@ -125,9 +119,7 @@ def test_write_stdout_feedback_logs(capsys, tmp_path):
         yaml_file.read_text(encoding="utf-8")
         == """- {"lvl": "feedback", "msg": "Hello, world", "dt": "2021-04-08T18:42:25.139513", "ns": "testing"}\n"""
     )
-    assert (
-        html_file.read_text(encoding="utf-8")
-        == """<!DOCTYPE html>
+    assert html_file.read_text(encoding="utf-8") == """<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>TuxTest log</title>
@@ -151,7 +143,6 @@ def test_write_stdout_feedback_logs(capsys, tmp_path):
 </pre>
 </body>
 </html>"""
-    )
     assert text_file.read_text(encoding="utf-8") == "<testing> Hello, world\n"
 
 
@@ -164,14 +155,11 @@ def test_writer_invalid_yaml(capsys, tmpdir):
         writer.write(data)
         writer.write("{hello: world}")
     out, err = capsys.readouterr()
-    assert (
-        out
-        == """{
+    assert out == """{
 hello world
 {}
 {hello: world}
 """
-    )
     assert err == ""
     assert (tmpdir / "logs").read_text(
         encoding="utf-8"

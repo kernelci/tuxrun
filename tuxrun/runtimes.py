@@ -125,7 +125,7 @@ class ContainerRuntime(Runtime):
         srcs = set()
         dsts = set()
         for binding in self.__bindings__:
-            (src, dst, ro, device) = binding
+            src, dst, ro, device = binding
             if src in srcs:
                 LOG.error("Duplicated mount source %r", src)
                 raise Exception("Duplicated mount source %r" % src)

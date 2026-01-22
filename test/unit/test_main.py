@@ -438,16 +438,14 @@ def test_tuxmake_directory(tmp_path, run):
 
     tuxmake_build = tmp_path / "build"
     tuxmake_build.mkdir()
-    (tuxmake_build / "metadata.json").write_text(
-        """
+    (tuxmake_build / "metadata.json").write_text("""
         {
             "results": {
                 "artifacts": {"kernel": ["bzImage"], "modules": ["modules.tar.xz"]}
             },
             "build": {"target_arch": "x86_64"}
         }
-        """
-    )
+        """)
 
     tux = tuxmake_directory(tuxmake_build)
     assert tux.kernel == f"file://{tuxmake_build}/bzImage"
@@ -461,16 +459,14 @@ def test_no_modules(tmp_path):
 
     tuxmake_build = tmp_path / "build"
     tuxmake_build.mkdir()
-    (tuxmake_build / "metadata.json").write_text(
-        """
+    (tuxmake_build / "metadata.json").write_text("""
         {
             "results": {
                 "artifacts": {"kernel": ["bzImage"]}
             },
             "build": {"target_arch": "x86_64"}
         }
-        """
-    )
+        """)
 
     tux = tuxmake_directory(tuxmake_build)
     assert tux.modules == []
@@ -614,9 +610,7 @@ def test_update_cache(mocker, monkeypatch, capsys):
     with pytest.raises(SystemExit):
         main()
     stdout, stderr = capsys.readouterr()
-    assert (
-        stdout
-        == """Updating local cache:
+    assert stdout == """Updating local cache:
 * Rootfs:
   * avh-imx93
   * avh-rpi4b
@@ -643,7 +637,6 @@ def test_update_cache(mocker, monkeypatch, capsys):
   * qemu-x86_64
 * Test definitions
 """
-    )
 
 
 def test_save_results_json(tuxrun_args, lava_run, mocker, tmp_path):
