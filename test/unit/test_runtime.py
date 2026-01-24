@@ -210,3 +210,64 @@ def test_run_errors(mocker, tmp_path):
             pass
     assert exc.match("Duplicated mount destination '/world'")
     popen.assert_not_called()
+
+
+def test_use_host_network(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.use_host_network()
+
+    cmd = runtime.cmd(["hello", "world"])
+    found_host_network = False
+    for i, arg in enumerate(cmd):
+        if arg == "--network" and i + 1 < len(cmd) and cmd[i + 1] == "host":
+            found_host_network = True
+            break
+    assert found_host_network, f"--network host not found in {cmd}"
+
+
+def test_skip_http_server_sets_entrypoint(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.skip_http_server()
+
+    cmd = runtime.cmd(["hello", "world"])
+    assert "--entrypoint" in cmd
+    entrypoint_idx = cmd.index("--entrypoint")
+    assert cmd[entrypoint_idx + 1] == "/usr/bin/lava-run"
+
+
+def test_skip_http_server_strips_lava_run_from_args(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.skip_http_server()
+
+    cmd = runtime.cmd(["lava-run", "--device", "foo", "definition.yaml"])
+    assert cmd[-3:] == ["--device", "foo", "definition.yaml"]
+    assert "--entrypoint" in cmd
+
+
+def test_skip_http_server_preserves_other_args(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.skip_http_server()
+
+    cmd = runtime.cmd(["other-command", "--option", "value"])
+    assert cmd[-3:] == ["other-command", "--option", "value"]
+
+
+def test_host_network_and_skip_http_server_combined(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.use_host_network()
+    runtime.skip_http_server()
+
+    cmd = runtime.cmd(["lava-run", "--device", "foo"])
+    assert "--network" in cmd
+    assert "--entrypoint" in cmd
+    assert cmd[-2:] == ["--device", "foo"]
