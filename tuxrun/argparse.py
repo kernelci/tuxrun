@@ -17,6 +17,18 @@ from tuxlava.devices import Device  # type: ignore
 from tuxlava.tests import Test  # type: ignore
 
 
+##############
+# Completers #
+##############
+def device_completer(**kwargs):
+    devices = [d.name for d in Device.list(virtual_device=True)]
+    return sorted(set(devices))
+
+
+def test_completer(**kwargs):
+    return Test.list(virtual_device=True)
+
+
 ###########
 # Helpers #
 ###########
@@ -50,10 +62,9 @@ class ListDevicesAction(argparse.Action):
         super().__init__(option_strings, dest=dest, default=default, nargs=0, help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        parser._print_message(
-            "\n".join([d.name for d in Device.list(virtual_device=True)]) + "\n",
-            sys.stdout,
-        )
+        devices = [d.name for d in Device.list(virtual_device=True)]
+        devices = sorted(set(devices))
+        parser._print_message("\n".join(devices) + "\n", sys.stdout)
         parser.exit()
 
 
@@ -328,12 +339,19 @@ def setup_parser() -> argparse.ArgumentParser:
     )
 
     group = parser.add_argument_group("run options")
-    group.add_argument(
+    device_arg = group.add_argument(
         "--device",
         default=None,
         metavar="NAME",
         help="Device type",
-        choices=[d.name for d in Device.list(virtual_device=True)],
+    )
+    device_arg.completer = device_completer  # type: ignore[attr-defined]
+    group.add_argument(
+        "--device-dict",
+        default=None,
+        type=Path,
+        metavar="PATH",
+        help="Path to device dictionary file for device-dict mode",
     )
     group.add_argument(
         "--boot-args", default=None, metavar="ARGS", help="extend boot arguments"
