@@ -5,6 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import argcomplete
 import contextlib
 import json
 import logging
@@ -393,8 +394,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
 
 
 def main() -> int:
-    # Parse command line
     parser = setup_parser()
+    argcomplete.autocomplete(parser)
     options = parser.parse_args()
 
     # Setup logging
