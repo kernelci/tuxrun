@@ -45,6 +45,8 @@ or Podman).
 
 There are several options for installing TuxRun:
 
+- [From Debian](docs/install-deb.md)
+- [From RPM](docs/install-rpm.md)
 - [From PyPI](docs/install-pypi.md)
 - [Run uninstalled](docs/run-uninstalled.md)
 
