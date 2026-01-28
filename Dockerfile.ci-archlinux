@@ -1,0 +1,39 @@
+FROM archlinux:base-devel
+ARG EXTRA_PACKAGES
+
+COPY Makefile *.PKGBUILD /tuxpkg/
+
+RUN sed -i '/^NoExtract/d' /etc/pacman.conf \
+    && pacman -Syyu --noconfirm glibc \
+    && pacman -S --noconfirm \
+        codespell \
+        flake8 \
+        git \
+        make \
+        mkdocs-material \
+        python-black \
+        python-build \
+        python-flit \
+        python-installer \
+        python-jinja \
+        python-pytest \
+        python-pytest-cov \
+        python-pytest-mock \
+        python-requests \
+        python-ruamel-yaml \
+        python-wheel \
+        python-yaml \
+        ${EXTRA_PACKAGES} \
+    && echo "C.UTF-8 UTF-8" >/etc/locale.gen \
+    && locale-gen
+
+RUN useradd -m build \
+    && echo 'build ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/build \
+    && chown -R build:build /tuxpkg
+
+RUN pacman -S --noconfirm python-pip \
+    && pip install --break-system-packages git+https://gitlab.com/Linaro/tuxpkg.git@main \
+    && pip install --break-system-packages git+https://github.com/kernelci/tuxlava.git@main \
+    && tuxpkg --version
+
+# vim: ft=dockerfile

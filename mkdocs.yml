@@ -34,6 +34,7 @@ nav:
   - PyPI: install-pypi.md
   - Debian package: install-deb.md
   - RPM package: install-rpm.md
+  - ArchLinux package: install-arch.md
   - Run uninstalled: run-uninstalled.md
 - Running:
   - FVP: run-fvp.md
