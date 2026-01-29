@@ -19,7 +19,9 @@ BuildRequires: python3-yaml
 BuildRequires: python3-ruamel-yaml
 BuildRequires: python3-jinja2
 BuildRequires: python3-requests
+BuildRequires: python3-argcomplete
 BuildRequires: tuxlava
+Requires: python3-argcomplete
 Requires: python3-yaml
 Requires: python3-ruamel-yaml
 Requires: python3-jinja2
