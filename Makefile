@@ -46,5 +46,5 @@ deb-sanity-check-prepare::
 	apt-get install -qy ca-certificates
 	/usr/lib/apt/apt-helper download-file https://kernelci.github.io/packages/signing-key.gpg /etc/apt/trusted.gpg.d/tuxlava.gpg
 	echo 'deb https://kernelci.github.io/packages/ ./' > /etc/apt/sources.list.d/tuxlava.list
-	echo 'deb http://deb.debian.org/debian bookworm contrib' > /etc/apt/sources.list.d/contrib.list
+	echo 'deb http://deb.debian.org/debian trixie contrib' > /etc/apt/sources.list.d/contrib.list
 	apt-get update
