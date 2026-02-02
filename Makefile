@@ -41,6 +41,10 @@ release: integration
 rpm-sanity-check-prepare::
 	printf '[tuxlava]\nname=tuxlava\ntype=rpm-md\nbaseurl=https://kernelci.github.io/tuxlava/packages/\ngpgcheck=1\ngpgkey=https://kernelci.github.io/tuxlava/packages/repodata/repomd.xml.key\nenabled=1\n' > /etc/yum.repos.d/tuxlava.repo
 
+pkg-sanity-check-prepare::
+	printf '[tuxlava]\nSigLevel = Never\nServer = https://kernelci.github.io/tuxlava/packages/\n' > /etc/pacman.d/tuxlava.conf
+	printf '\nInclude = /etc/pacman.d/*.conf\n' >> /etc/pacman.conf
+
 deb-sanity-check-prepare::
 	apt-get update
 	apt-get install -qy ca-certificates
