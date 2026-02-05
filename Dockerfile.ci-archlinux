@@ -8,32 +8,28 @@ RUN sed -i '/^NoExtract/d' /etc/pacman.conf \
     && pacman -S --noconfirm \
         codespell \
         flake8 \
-        git \
         make \
         mkdocs-material \
         python-black \
-        python-build \
-        python-flit \
-        python-installer \
-        python-jinja \
-        python-pytest \
-        python-pytest-cov \
-        python-pytest-mock \
-        python-requests \
-        python-ruamel-yaml \
-        python-wheel \
-        python-yaml \
+        python-pip \
         ${EXTRA_PACKAGES} \
     && echo "C.UTF-8 UTF-8" >/etc/locale.gen \
     && locale-gen
+
+RUN printf '[tuxpkg]\nSigLevel = Never\nServer = https://linaro.gitlab.io/tuxpkg/packages/\n' > /etc/pacman.d/tuxpkg.conf \
+    && make -C /tuxpkg pkg-sanity-check-prepare
+
+RUN bash -c 'cd /tuxpkg && source *.PKGBUILD \
+    && pacman -S --noconfirm \
+        "${depends[@]}" \
+        "${makedepends[@]}" \
+        "${checkdepends[@]}"'
 
 RUN useradd -m build \
     && echo 'build ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/build \
     && chown -R build:build /tuxpkg
 
-RUN pacman -S --noconfirm python-pip \
-    && pip install --break-system-packages git+https://gitlab.com/Linaro/tuxpkg.git@main \
-    && pip install --break-system-packages git+https://github.com/kernelci/tuxlava.git@main \
+RUN pip install --break-system-packages git+https://gitlab.com/Linaro/tuxpkg.git@main \
     && tuxpkg --version
 
 # vim: ft=dockerfile
