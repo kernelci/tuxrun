@@ -11,13 +11,13 @@ RUN sed -i '/^NoExtract/d' /etc/pacman.conf \
         make \
         mkdocs-material \
         python-black \
-        python-pip \
         ${EXTRA_PACKAGES} \
     && echo "C.UTF-8 UTF-8" >/etc/locale.gen \
     && locale-gen
 
 RUN printf '[tuxpkg]\nSigLevel = Never\nServer = https://linaro.gitlab.io/tuxpkg/packages/\n' > /etc/pacman.d/tuxpkg.conf \
-    && make -C /tuxpkg pkg-sanity-check-prepare
+    && make -C /tuxpkg pkg-sanity-check-prepare \
+    && pacman -Syyu --noconfirm tuxpkg
 
 RUN bash -c 'cd /tuxpkg && source *.PKGBUILD \
     && pacman -S --noconfirm \
@@ -29,7 +29,6 @@ RUN useradd -m build \
     && echo 'build ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/build \
     && chown -R build:build /tuxpkg
 
-RUN pip install --break-system-packages git+https://gitlab.com/Linaro/tuxpkg.git@main \
-    && tuxpkg --version
+RUN tuxpkg --version
 
 # vim: ft=dockerfile
