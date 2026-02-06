@@ -445,18 +445,7 @@ def main() -> int:
     LOG.setLevel(logging.DEBUG if options.debug else logging.INFO)
 
     if not options.device:
-        if options.device_dict:
-            stem = options.device_dict.stem
-            for d in Device.list():
-                if d.name == stem or d.name.endswith(f"-{stem}"):
-                    options.device = d.name
-                    break
-            if not options.device:
-                parser.error(
-                    f"cannot derive --device from device-dict filename '{stem}'. "
-                    f"Please specify --device explicitly."
-                )
-        elif not (options.tuxmake or options.tuxbuild):
+        if not (options.tuxmake or options.tuxbuild):
             parser.error("argument --device is required")
 
     if options.device and not options.device_dict:
