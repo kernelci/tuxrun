@@ -44,6 +44,7 @@ rpm-sanity-check-prepare::
 pkg-sanity-check-prepare::
 	printf '[tuxlava]\nSigLevel = Never\nServer = https://kernelci.github.io/tuxlava/packages/\n' > /etc/pacman.d/tuxlava.conf
 	printf '\nInclude = /etc/pacman.d/*.conf\n' >> /etc/pacman.conf
+	pacman -Sy
 
 deb-sanity-check-prepare::
 	apt-get update
