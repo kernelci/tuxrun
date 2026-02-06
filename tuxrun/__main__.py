@@ -445,7 +445,7 @@ def main() -> int:
     LOG.setLevel(logging.DEBUG if options.debug else logging.INFO)
 
     if not options.device:
-        if not (options.tuxmake or options.tuxbuild):
+        if not (options.tuxmake or options.tuxbuild or options.device_dict):
             parser.error("argument --device is required")
 
     if options.device and not options.device_dict:
