@@ -1,5 +1,5 @@
 pkgname=tuxrun
-pkgver=1.4.0
+pkgver=1.5.0
 pkgrel=1
 pkgdesc='TuxRun is a command line tool for testing Linux with curated test suites'
 url='https://tuxrun.org/'
