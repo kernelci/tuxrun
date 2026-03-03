@@ -15,10 +15,9 @@ RUN apt-get update \
         git \
         make \
         mkdocs \
-        mypy \
         pip \
         ${EXTRA_PACKAGES} \
-    && pip install --break-system-packages black \
+    && pip install --break-system-packages black mypy \
     && true
 
 RUN if grep '^Source: tuxpkg' /tuxpkg/debian/control; then exit; fi; \
