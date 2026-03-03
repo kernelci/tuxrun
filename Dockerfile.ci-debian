@@ -8,7 +8,6 @@ COPY Makefile       /tuxpkg
 RUN apt-get update \
     && apt-get install -qy auto-apt-proxy \
     && apt-get install -q=2 \
-        black \
         ca-certificates \
         codespell \
         flake8 \
@@ -17,7 +16,9 @@ RUN apt-get update \
         make \
         mkdocs \
         mypy \
+        pip \
         ${EXTRA_PACKAGES} \
+    && pip install --break-system-packages black \
     && true
 
 RUN if grep '^Source: tuxpkg' /tuxpkg/debian/control; then exit; fi; \
