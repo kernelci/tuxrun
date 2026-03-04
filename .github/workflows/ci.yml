@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install black flake8 tuxpkg
+        run: pip install black==25.1.0 flake8 tuxpkg
       - name: Run stylecheck
         run: make stylecheck
 
