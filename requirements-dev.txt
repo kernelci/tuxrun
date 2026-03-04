@@ -1,4 +1,4 @@
-black
+black==25.1.0
 codespell
 flake8
 mkdocs
