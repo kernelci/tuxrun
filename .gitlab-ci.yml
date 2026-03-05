@@ -1,5 +1,4 @@
 include:
-  - https://gitlab.com/Linaro/tuxpkg/-/raw/v0.16.0/gitlab-ci-pipeline.yml
   - template: Security/SAST.gitlab-ci.yml
 
 variables:
@@ -194,47 +193,6 @@ integration:
     #  - ltp-fcntl-locktests ltp-fsx ltp-fs_perms_simple ltp-smoke
     #  - ltp-fs_bind
       - ltp-smoke
-
-#########
-# Build #
-#########
-doc:
-  extends: .job
-  stage: build
-  artifacts:
-    paths:
-      - public
-
-###########
-# deploy  #
-###########
-pages:
-  extends: .job
-  stage: deploy
-  needs:
-    - doc
-    - repository
-  artifacts:
-    paths:
-      - public
-  only:
-    - tags
-  script:
-    - cp -r dist/repo public/packages/
-
-# trigger packages.tuxsuite.com on release
-trigger_tuxsuite:
-  stage: .post
-  image: $CI_REGISTRY_IMAGE/ci-integration
-  before_script:
-    - apt update
-    - apt install -y curl
-  script:
-    - "curl -X POST -F token=$TUXSUITE_PACKAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/13070238/trigger/pipeline"
-  only:
-    - tags
-  needs:
-    - pages
 
 trigger_bot_pipeline:
   stage: test
