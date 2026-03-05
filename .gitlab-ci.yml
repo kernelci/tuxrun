@@ -16,7 +16,7 @@ variables:
     - python3 -m venv $HOME/.foo-venv
     - source $HOME/.foo-venv/bin/activate
     - python3 -m pip install -e .
-    - python3 -m pip install tuxlava mkdocs-material tuxpkg ruamel.yaml # FIXME not in Debian
+    - python3 -m pip install -r requirements-dev.txt
   script:
   - make $CI_JOB_NAME
 
