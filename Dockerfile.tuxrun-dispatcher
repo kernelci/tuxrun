@@ -16,9 +16,10 @@ RUN apt-get update && \
     echo "deb     http://ftp.de.debian.org/debian/    testing main contrib non-free" > /etc/apt/sources.list.d/testing.list && \
     echo "deb-src http://ftp.de.debian.org/debian/    testing main contrib non-free" >> /etc/apt/sources.list.d/testing.list && \
     apt-get update && \
-    apt-get -t testing install --no-install-recommends --yes qemu-system-arm qemu-system-mips qemu-system-misc qemu-system-ppc qemu-system-sparc qemu-system-x86 && \
+    apt-get -t testing install --no-install-recommends --yes qemu-system-arm qemu-system-mips qemu-system-misc qemu-system-ppc qemu-system-riscv qemu-system-s390x qemu-system-sparc qemu-system-x86 && \
     apt-get upgrade --yes && \
     apt-get purge --yes gnupg && \
+    apt-mark manual qemu-system-arm qemu-system-mips qemu-system-misc qemu-system-ppc qemu-system-riscv qemu-system-s390x qemu-system-sparc qemu-system-x86 && \
     apt-get autoremove --purge --yes && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
