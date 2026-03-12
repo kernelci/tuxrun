@@ -242,6 +242,15 @@ def setup_parser() -> argparse.ArgumentParser:
         type=int,
         help="rootfs partition number",
     )
+    group.add_argument(
+        "--pflash",
+        default=[],
+        metavar="URL",
+        type=pathurlnone,
+        help="pflash image URL. Can be specified multiple times",
+        action="append",
+        dest="pflash",
+    )
     artefact("rootfs")
     artefact("scp-fw")
     artefact("scp-romfw")
@@ -385,7 +394,7 @@ def setup_parser() -> argparse.ArgumentParser:
         "--enable-cca",
         default=False,
         action="store_true",
-        help="Enable Arm CCA (Confidential Computing Architecture) with RME support on FVP",
+        help="Enable Arm CCA (Confidential Computing Architecture) with RME support on FVP or QEMU",
     )
 
     group.add_argument(
