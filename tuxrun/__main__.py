@@ -187,6 +187,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "dtb": options.dtb,
         "enable_kvm": options.enable_kvm,
         "enable_trustzone": options.enable_trustzone,
+        "enable_cca": options.enable_cca,
         "enable_network": options.enable_network,
         "fip": options.fip,
         "job_definition": options.job_definition,
