@@ -217,6 +217,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "tmpdir": tmpdir,
         "tuxbuild": options.tuxbuild,
         "tuxmake": options.tuxmake,
+        "uboot": options.uboot,
         "uefi": options.uefi,
     }
     job = Job(**def_arguments)
@@ -297,6 +298,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         job.scp_fw,
         job.scp_romfw,
         job.ssh_identity_file,
+        job.uboot,
         job.uefi,
     ] + extra_assets:
         ro = True

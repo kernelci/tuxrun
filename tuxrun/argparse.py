@@ -47,6 +47,7 @@ def filter_artefacts(options):
         "rootfs",
         "scp-fw",
         "scp-romfw",
+        "uboot",
         "uefi",
     ]
     return {k: getattr(options, k) for k in vars(options) if k in keys}
@@ -288,6 +289,7 @@ def setup_parser() -> argparse.ArgumentParser:
         help="directory containing a TuxMake build",
     )
     artefact("test-definitions")
+    artefact("uboot")
     artefact("uefi")
     group.add_argument(
         "--fvp-ubl-license",
