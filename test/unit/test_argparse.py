@@ -1,6 +1,6 @@
 import pytest
 
-from tuxrun.argparse import setup_parser
+from tuxrun.argparse import filter_artefacts, setup_parser
 
 
 def test_timeouts_parser():
@@ -14,3 +14,11 @@ def test_timeouts_parser():
 
     with pytest.raises(SystemExit):
         setup_parser().parse_args(["--timeouts", "booting=1"])
+
+
+def test_uboot_argument():
+    options = setup_parser().parse_args(
+        ["--device", "qemu-arm64", "--uboot", "https://example.com/u-boot.bin"]
+    )
+    assert options.uboot == "https://example.com/u-boot.bin"
+    assert filter_artefacts(options)["uboot"] == "https://example.com/u-boot.bin"
