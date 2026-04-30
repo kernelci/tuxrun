@@ -187,6 +187,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "dtb": options.dtb,
         "enable_kvm": options.enable_kvm,
         "enable_trustzone": options.enable_trustzone,
+        "enable_cca": options.enable_cca,
         "enable_network": options.enable_network,
         "fip": options.fip,
         "job_definition": options.job_definition,
@@ -196,6 +197,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "mcp_romfw": options.mcp_romfw,
         "modules": options.modules,
         "overlays": options.overlays,
+        "pflash": options.pflash,
         "parameters": options.parameters,
         "prompt": options.prompt,
         "qemu_image": options.qemu_image,
@@ -298,7 +300,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         job.scp_romfw,
         job.ssh_identity_file,
         job.uefi,
-    ] + extra_assets:
+    ] + list(job.pflash) + extra_assets:
         ro = True
         if isinstance(path, tuple):
             path, ro = path
