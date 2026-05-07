@@ -174,13 +174,15 @@ class DockerRuntime(ContainerRuntime):
     prefix = ["docker", "run", "--rm", "--hostname", "tuxrun"]
 
     def pre_run(self, tmpdir):
-        # Render and bind the docker wrapper
+        volume = getattr(self, "_device_dict_volume", None) or str(
+            tmpdir / "dispatcher" / "tmp"
+        )
         wrap = (
             wrappers()
             .get_template("docker.jinja2")
             .render(
                 runtime="docker",
-                volume=str(tmpdir / "dispatcher" / "tmp"),
+                volume=volume,
                 dispatcher_download_dir=self.dispatcher_download_dir,
             )
         )

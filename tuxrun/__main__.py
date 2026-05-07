@@ -355,10 +355,12 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     if job.device.flag_use_pre_run_cmd or job.qemu_image or options.device_dict:
         LOG.debug("Pre run command")
         if options.device_dict:
+            options.dispatcher_download_dir.mkdir(parents=True, exist_ok=True)
             runtime.bind(options.dispatcher_download_dir, Path("/srv/tftp"))
             runtime.bind(
                 options.dispatcher_download_dir, options.dispatcher_download_dir
             )
+            runtime._device_dict_volume = str(options.dispatcher_download_dir)
         else:
             runtime.bind(tmpdir / "dispatcher" / "tmp", options.dispatcher_download_dir)
             (tmpdir / "dispatcher" / "tmp").mkdir()
