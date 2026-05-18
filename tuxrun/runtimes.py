@@ -53,7 +53,7 @@ class Runtime:
     def name(self, name):
         self.__name__ = name
 
-    def pre_run(self, tmpdir):
+    def pre_run(self, tmpdir, volume=None):
         pass
 
     def post_run(self):
@@ -111,6 +111,12 @@ class ContainerRuntime(Runtime):
     container = True
     _use_host_network = False
     _skip_http_server = False
+
+    @staticmethod
+    def _resolve_volume(tmpdir, volume):
+        if volume is None:
+            return tmpdir / "dispatcher" / "tmp"
+        return volume
 
     def __init__(self, dispatcher_download_dir):
         super().__init__(dispatcher_download_dir)
@@ -173,14 +179,14 @@ class DockerRuntime(ContainerRuntime):
     binary = "docker"
     prefix = ["docker", "run", "--rm", "--hostname", "tuxrun"]
 
-    def pre_run(self, tmpdir):
-        # Render and bind the docker wrapper
+    def pre_run(self, tmpdir, volume=None):
+        volume = self._resolve_volume(tmpdir, volume)
         wrap = (
             wrappers()
             .get_template("docker.jinja2")
             .render(
                 runtime="docker",
-                volume=str(tmpdir / "dispatcher" / "tmp"),
+                volume=str(volume),
                 dispatcher_download_dir=self.dispatcher_download_dir,
             )
         )
@@ -199,8 +205,8 @@ class PodmanRuntime(ContainerRuntime):
     prefix = ["podman", "run", "--log-driver=none", "--rm", "--hostname", "tuxrun"]
     network = None
 
-    def pre_run(self, tmpdir):
-        # Render and bind the docker wrapper
+    def pre_run(self, tmpdir, volume=None):
+        volume = self._resolve_volume(tmpdir, volume)
         self.network = os.path.basename(tmpdir)
         subprocess.run(["podman", "network", "create", self.network])
         if self.qemu_image is None:
@@ -210,7 +216,7 @@ class PodmanRuntime(ContainerRuntime):
             .get_template("docker.jinja2")
             .render(
                 runtime="podman",
-                volume=str(tmpdir / "dispatcher" / "tmp"),
+                volume=str(volume),
                 network=self.network,
                 dispatcher_download_dir=self.dispatcher_download_dir,
             )
