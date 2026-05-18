@@ -118,6 +118,22 @@ def test_pre_run_docker(tmp_path):
     )
 
 
+def test_pre_run_docker_default_volume(tmp_path):
+    runtime = Runtime.select("docker")(tmp_path)
+    runtime.pre_run(tmp_path)
+    wrapper = (tmp_path / "docker").read_text(encoding="utf-8")
+    assert str(tmp_path / "dispatcher" / "tmp") in wrapper
+
+
+def test_pre_run_docker_custom_volume(tmp_path):
+    custom_volume = tmp_path / "custom" / "downloads"
+    runtime = Runtime.select("docker")(tmp_path)
+    runtime.pre_run(tmp_path, volume=custom_volume)
+    wrapper = (tmp_path / "docker").read_text(encoding="utf-8")
+    assert str(custom_volume) in wrapper
+    assert str(tmp_path / "dispatcher" / "tmp") not in wrapper
+
+
 def test_pre_run_null(tmp_path):
     runtime = Runtime.select("null")(tmp_path)
     runtime.pre_run(None)
@@ -133,6 +149,30 @@ def test_pre_run_podman(mocker, tmp_path):
     assert runtime.__pre_proc__ is not None
     popen.assert_called_once()
     run.assert_called_once()
+
+
+def test_pre_run_podman_default_volume(mocker, tmp_path):
+    (tmp_path / "podman.sock").touch()
+    mocker.patch("subprocess.Popen")
+    mocker.patch("subprocess.run")
+
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.pre_run(tmp_path)
+    wrapper = (tmp_path / "docker").read_text(encoding="utf-8")
+    assert str(tmp_path / "dispatcher" / "tmp") in wrapper
+
+
+def test_pre_run_podman_custom_volume(mocker, tmp_path):
+    (tmp_path / "podman.sock").touch()
+    mocker.patch("subprocess.Popen")
+    mocker.patch("subprocess.run")
+
+    custom_volume = tmp_path / "custom" / "downloads"
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.pre_run(tmp_path, volume=custom_volume)
+    wrapper = (tmp_path / "docker").read_text(encoding="utf-8")
+    assert str(custom_volume) in wrapper
+    assert str(tmp_path / "dispatcher" / "tmp") not in wrapper
 
 
 def test_pre_run_podman_errors(mocker, tmp_path):
