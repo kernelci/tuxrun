@@ -39,17 +39,17 @@ release: integration
 
 
 rpm-sanity-check-prepare::
-	printf '[tuxlava]\nname=tuxlava\ntype=rpm-md\nbaseurl=https://kernelci.github.io/tuxlava/packages/\ngpgcheck=1\ngpgkey=https://kernelci.github.io/tuxlava/packages/repodata/repomd.xml.key\nenabled=1\n' > /etc/yum.repos.d/tuxlava.repo
+	printf '[tuxlava]\nname=tuxlava\ntype=rpm-md\nbaseurl=https://tuxlava.org/packages/\ngpgcheck=1\ngpgkey=https://tuxlava.org/packages/repodata/repomd.xml.key\nenabled=1\n' > /etc/yum.repos.d/tuxlava.repo
 
 pkg-sanity-check-prepare::
-	printf '[tuxlava]\nSigLevel = Never\nServer = https://kernelci.github.io/tuxlava/packages/\n' > /etc/pacman.d/tuxlava.conf
+	printf '[tuxlava]\nSigLevel = Never\nServer = https://tuxlava.org/packages/\n' > /etc/pacman.d/tuxlava.conf
 	printf '\nInclude = /etc/pacman.d/*.conf\n' >> /etc/pacman.conf
 	pacman -Sy
 
 deb-sanity-check-prepare::
 	apt-get update
 	apt-get install -qy ca-certificates
-	/usr/lib/apt/apt-helper download-file https://kernelci.github.io/tuxlava/packages/signing-key.gpg /etc/apt/trusted.gpg.d/tuxlava.gpg
-	echo 'deb https://kernelci.github.io/tuxlava/packages/ ./' > /etc/apt/sources.list.d/tuxlava.list
+	/usr/lib/apt/apt-helper download-file https://tuxlava.org/packages/signing-key.gpg /etc/apt/trusted.gpg.d/tuxlava.gpg
+	echo 'deb https://tuxlava.org/packages/ ./' > /etc/apt/sources.list.d/tuxlava.list
 	echo 'deb http://deb.debian.org/debian trixie contrib' > /etc/apt/sources.list.d/contrib.list
 	apt-get update
