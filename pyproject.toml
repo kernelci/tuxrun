@@ -29,3 +29,6 @@ Homepage = "https://tuxrun.org/"
 
 [project.scripts]
 tuxrun = "tuxrun.__main__:main"
+
+[tool.flit.sdist]
+include = ["test/"]
