@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "tuxrun"
 authors = [
-    {name = "Antonio Terceiro", email = "antonio.terceiro@linaro.org"},
+    {name = "Antonio Terceiro"},
 ]
 maintainers = [
     {name = "Anders Roxell", email = "anders.roxell@linaro.org"},
@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://tuxsuite.com/"
+Homepage = "https://tuxrun.org/"
 
 [project.scripts]
 tuxrun = "tuxrun.__main__:main"
