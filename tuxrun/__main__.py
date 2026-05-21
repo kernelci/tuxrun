@@ -286,21 +286,25 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     runtime.qemu_image = options.qemu_image
 
     runtime.bind(tmpdir)
-    for path in [
-        job.ap_romfw,
-        job.bios,
-        job.bl1,
-        job.dtb,
-        job.fip,
-        job.kernel,
-        job.mcp_fw,
-        job.mcp_romfw,
-        job.rootfs,
-        job.scp_fw,
-        job.scp_romfw,
-        job.ssh_identity_file,
-        job.uefi,
-    ] + list(job.pflash) + extra_assets:
+    for path in (
+        [
+            job.ap_romfw,
+            job.bios,
+            job.bl1,
+            job.dtb,
+            job.fip,
+            job.kernel,
+            job.mcp_fw,
+            job.mcp_romfw,
+            job.rootfs,
+            job.scp_fw,
+            job.scp_romfw,
+            job.ssh_identity_file,
+            job.uefi,
+        ]
+        + list(job.pflash)
+        + extra_assets
+    ):
         ro = True
         if isinstance(path, tuple):
             path, ro = path
