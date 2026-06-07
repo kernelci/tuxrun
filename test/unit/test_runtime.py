@@ -151,6 +151,23 @@ def test_pre_run_podman(mocker, tmp_path):
     run.assert_called_once()
 
 
+def test_pre_run_podman_host_network(mocker, tmp_path):
+    (tmp_path / "podman.sock").touch()
+    mocker.patch("subprocess.Popen")
+    mocker.patch("subprocess.run")
+
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.use_host_network()
+    runtime.pre_run(tmp_path)
+
+    cmd = runtime.cmd(["hello", "world"])
+    networks = [cmd[i + 1] for i, arg in enumerate(cmd) if arg == "--network"]
+    assert "host" in networks
+    assert runtime.network not in networks
+
+
 def test_pre_run_podman_default_volume(mocker, tmp_path):
     (tmp_path / "podman.sock").touch()
     mocker.patch("subprocess.Popen")
