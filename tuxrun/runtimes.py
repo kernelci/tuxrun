@@ -224,7 +224,7 @@ class PodmanRuntime(ContainerRuntime):
         volume = self._resolve_volume(tmpdir, volume)
         self.network = os.path.basename(tmpdir)
         subprocess.run(["podman", "network", "create", self.network])
-        if self.qemu_image is None:
+        if self.qemu_image is None and not self._use_host_network:
             self.prefix.extend(["--network", self.network])
         wrap = (
             wrappers()
