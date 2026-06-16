@@ -222,7 +222,9 @@ def run(device, test, runtime, debug):
         ret = subprocess.call(args)
         if ret != 0:
             print(f"Command return non-zero exist status {ret}")
-            print((tmpdir / "logs.yaml").read_text(encoding="utf-8"))
+            log = tmpdir / "logs.yaml"
+            if log.exists():
+                print(log.read_text(encoding="utf-8"))
             return ret
 
         results = get_results(tmpdir)
