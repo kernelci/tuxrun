@@ -627,6 +627,7 @@ def test_update_cache(mocker, monkeypatch, capsys):
   * qemu-armv7
   * qemu-armv7be
   * qemu-i386
+  * qemu-lava
   * qemu-m68k
   * qemu-mips32
   * qemu-mips32el
