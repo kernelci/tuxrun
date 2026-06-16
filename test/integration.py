@@ -273,9 +273,9 @@ def main():
             for d in Device.list(virtual_device=True)
             if fnmatch.fnmatch(d.name, pat)
         ]
-        for qemu in ["qemu-riscv32", "qemu-sh4"]:
-            if qemu in options.devices:
-                options.devices.remove(qemu)
+        for skip in ["fvp-lava", "qemu-lava", "qemu-riscv32", "qemu-sh4"]:
+            if skip in options.devices:
+                options.devices.remove(skip)
 
     for device in options.devices:
         tests = options.tests.copy()
