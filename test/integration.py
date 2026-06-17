@@ -218,6 +218,14 @@ def run(device, test, runtime, debug):
             ]
         )
 
+    elif device == "fvp-aemva":
+        args.extend(
+            [
+                "--parameters",
+                "FVP_ARM_ARCH_VERSION=9.5",
+            ]
+        )
+
     try:
         ret = subprocess.call(args)
         if ret != 0:
