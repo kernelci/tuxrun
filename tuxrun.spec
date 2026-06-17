@@ -1,5 +1,5 @@
 Name:      tuxrun
-Version:   1.8.0
+Version:   1.9.0
 Release:   0%{?dist}
 Summary:   command line tool for testing Linux with curated test suites
 License:   MIT
@@ -71,6 +71,9 @@ ln -sf ../share/%{name}/run %{buildroot}/usr/bin/%{name}
 %license LICENSE
 
 %changelog
+* Wed Jun 17 2026 Anders Roxell <anders.roxell@linaro.org> - 1.9.0-1
+- Release 1.9.0. See: https://github.com/kernelci/tuxrun/releases/tag/v1.9.0
+
 * Thu May 28 2026 Anders Roxell <anders.roxell@linaro.org> - 1.8.0-1
 - Release 1.8.0. See: https://github.com/kernelci/tuxrun/releases/tag/v1.8.0
 
