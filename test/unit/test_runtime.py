@@ -267,6 +267,42 @@ def test_use_host_network(tmp_path):
     assert found_host_network, f"--network host not found in {cmd}"
 
 
+def test_pull_podman(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.pull()
+
+    cmd = runtime.cmd(["hello", "world"])
+    assert "--pull" in cmd
+    assert cmd[cmd.index("--pull") + 1] == "newer"
+
+
+def test_pull_docker(tmp_path):
+    runtime = Runtime.select("docker")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.pull()
+
+    cmd = runtime.cmd(["hello", "world"])
+    assert "--pull" in cmd
+    assert cmd[cmd.index("--pull") + 1] == "always"
+
+
+def test_pull_default_off(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+
+    assert "--pull" not in runtime.cmd(["hello", "world"])
+
+
+def test_pull_null(tmp_path):
+    runtime = Runtime.select("null")(tmp_path)
+    runtime.pull()
+    assert runtime.cmd(["hello", "world"]) == ["hello", "world"]
+
+
 def test_skip_http_server_sets_entrypoint(tmp_path):
     runtime = Runtime.select("podman")(tmp_path)
     runtime.name("name")

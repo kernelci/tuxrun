@@ -62,6 +62,9 @@ class Runtime:
     def use_host_network(self):
         pass
 
+    def pull(self):
+        pass
+
     def cmd(self, args):
         raise NotImplementedError()  # pragma: no cover
 
@@ -111,6 +114,7 @@ class ContainerRuntime(Runtime):
     container = True
     _use_host_network = False
     _skip_http_server = False
+    _pull = False
 
     @staticmethod
     def _resolve_volume(tmpdir, volume):
@@ -137,8 +141,13 @@ class ContainerRuntime(Runtime):
     def skip_http_server(self):
         self._skip_http_server = True
 
+    def pull(self):
+        self._pull = True
+
     def cmd(self, args):
         prefix = self.prefix.copy()
+        if self._pull:
+            prefix.extend(["--pull", self.pull_policy])
         if self._use_host_network:
             prefix.extend(["--network", "host"])
         if self._skip_http_server:
@@ -178,6 +187,7 @@ class DockerRuntime(ContainerRuntime):
     bind_guestfs = False
     binary = "docker"
     prefix = ["docker", "run", "--rm", "--hostname", "tuxrun"]
+    pull_policy = "always"
 
     def pre_run(self, tmpdir, volume=None):
         volume = self._resolve_volume(tmpdir, volume)
@@ -203,6 +213,7 @@ class DockerRuntime(ContainerRuntime):
 class PodmanRuntime(ContainerRuntime):
     binary = "podman"
     prefix = ["podman", "run", "--log-driver=none", "--rm", "--hostname", "tuxrun"]
+    pull_policy = "newer"
     network = None
 
     def pre_run(self, tmpdir, volume=None):
