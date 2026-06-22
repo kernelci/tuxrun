@@ -418,6 +418,12 @@ def setup_parser() -> argparse.ArgumentParser:
         help="Image to use",
     )
     group.add_argument(
+        "--pull",
+        default=False,
+        action="store_true",
+        help="Pull the latest image before running",
+    )
+    group.add_argument(
         "--qemu-image", default=None, help="Use qemu from the given container image"
     )
 
