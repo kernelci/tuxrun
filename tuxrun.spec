@@ -30,7 +30,7 @@ Requires: tuxlava
 
 BuildArch: noarch
 
-Requires: python3 >= 3.6
+Requires: python3 >= 3.11
 
 %global debug_package %{nil}
 
