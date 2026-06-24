@@ -24,7 +24,7 @@ Homepage: https://tuxrun.org/
 
 Package: tuxrun
 Architecture: all
-Depends: python3 (>= 3.6),
+Depends: python3 (>= 3.11),
          python3-requests,
          python3-jinja2,
          python3-yaml,
