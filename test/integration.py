@@ -288,6 +288,7 @@ def main():
             "qemu-armv7be",
             "qemu-arm64be",
             "qemu-lava",
+            "qemu-m68k",
             "qemu-riscv32",
             "qemu-sh4",
         ]:
