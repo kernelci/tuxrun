@@ -283,7 +283,14 @@ def main():
             for d in Device.list(virtual_device=True)
             if fnmatch.fnmatch(d.name, pat)
         ]
-        for skip in ["fvp-lava", "qemu-lava", "qemu-riscv32", "qemu-sh4"]:
+        for skip in [
+            "fvp-lava",
+            "qemu-armv7be",
+            "qemu-arm64be",
+            "qemu-lava",
+            "qemu-riscv32",
+            "qemu-sh4",
+        ]:
             if skip in options.devices:
                 options.devices.remove(skip)
 
