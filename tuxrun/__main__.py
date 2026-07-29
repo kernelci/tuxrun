@@ -172,6 +172,39 @@ def run_hacking_sesson(definition, case, test):
             )
 
 
+def bind_docker_shell_extra_args(runtime, extra_args):
+    """Bind the volumes and devices declared in a device dict's
+    docker_shell_extra_arguments onto the runtime."""
+    for arg in extra_args:
+        if arg.startswith("--volume="):
+            volume_spec = arg[len("--volume=") :]
+            parts = volume_spec.split(":")
+            if len(parts) >= 2:
+                host_path = Path(parts[0])
+                container_path = Path(parts[1])
+                ro = len(parts) > 2 and parts[2] == "ro"
+                if host_path.exists():
+                    runtime.bind(host_path, container_path, ro=ro)
+        elif arg.startswith("--device="):
+            device_spec = arg[len("--device=") :]
+            parts = device_spec.split(":")
+            if not parts[0]:
+                LOG.warning("Ignoring --device with empty host path: %r", arg)
+                continue
+            host_path = Path(parts[0])
+            container_path = (
+                Path(parts[1]) if len(parts) > 1 and parts[1] else host_path
+            )
+            # docker --device permissions are r/w/m; treat a bare "r" as
+            # read-only and anything else (rw, rwm, unset) as read-write, so we
+            # never grant more access than the device dict asked for.
+            ro = len(parts) > 2 and parts[2] == "r"
+            if host_path.exists():
+                runtime.bind(host_path, container_path, ro=ro, device=True)
+            else:
+                LOG.warning("Ignoring --device %s: host path does not exist", host_path)
+
+
 ##############
 # Entrypoint #
 ##############
@@ -323,16 +356,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         runtime.skip_http_server()
         if job.d_dict_config:
             extra_args = job.d_dict_config.get("docker_shell_extra_arguments", [])
-            for arg in extra_args:
-                if arg.startswith("--volume="):
-                    volume_spec = arg[len("--volume=") :]
-                    parts = volume_spec.split(":")
-                    if len(parts) >= 2:
-                        host_path = Path(parts[0])
-                        container_path = Path(parts[1])
-                        ro = len(parts) > 2 and parts[2] == "ro"
-                        if host_path.exists():
-                            runtime.bind(host_path, container_path, ro=ro)
+            bind_docker_shell_extra_args(runtime, extra_args)
         control_binaries_param = options.parameters.get("DEVICE_CONTROL_BINARIES", "")
         control_binaries = (
             control_binaries_param.split(",") if control_binaries_param else []

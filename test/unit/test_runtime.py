@@ -347,3 +347,35 @@ def test_host_network_and_skip_http_server_combined(tmp_path):
     assert "--network" in cmd
     assert "--entrypoint" in cmd
     assert cmd[-2:] == ["--device", "foo"]
+
+
+def test_bind_device_read_write_renders_rw(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.bind("/dev/i2c-3", "/dev/i2c-3", device=True)
+    cmd = runtime.cmd(["hello"])
+    idx = cmd.index("/dev/i2c-3:/dev/i2c-3:rw")
+    assert cmd[idx - 1] == "--device"
+
+
+def test_bind_device_read_only_renders_valid_r(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.bind("/dev/i2c-3", "/dev/i2c-3", ro=True, device=True)
+    cmd = runtime.cmd(["hello"])
+    assert "/dev/i2c-3:/dev/i2c-3:r" in cmd
+    assert "/dev/i2c-3:/dev/i2c-3:ro" not in cmd
+    idx = cmd.index("/dev/i2c-3:/dev/i2c-3:r")
+    assert cmd[idx - 1] == "--device"
+
+
+def test_bind_volume_read_only_still_renders_ro(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.name("name")
+    runtime.image("image")
+    runtime.bind("/etc/config", "/etc/config", ro=True)
+    cmd = runtime.cmd(["hello"])
+    idx = cmd.index("/etc/config:/etc/config:ro")
+    assert cmd[idx - 1] == "-v"

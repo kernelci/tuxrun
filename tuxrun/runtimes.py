@@ -164,8 +164,12 @@ class ContainerRuntime(Runtime):
                 LOG.error("Duplicated mount destination %r", dst)
                 raise Exception("Duplicated mount destination %r" % dst)
             dsts.add(dst)
-            ro = "ro" if ro else "rw"
-            prefix.extend(["--device" if device else "-v", f"{src}:{dst}:{ro}"])
+            if device:
+                mode = "r" if ro else "rw"
+                prefix.extend(["--device", f"{src}:{dst}:{mode}"])
+            else:
+                mode = "ro" if ro else "rw"
+                prefix.extend(["-v", f"{src}:{dst}:{mode}"])
         prefix.extend(["--name", self.__name__])
         return prefix + [self.__image__] + args
 
