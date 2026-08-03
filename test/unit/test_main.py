@@ -1,12 +1,15 @@
 import json
+import logging
 import os
+from pathlib import Path
 
 import pytest
 import shlex
 import yaml
 
 import tuxrun.__main__
-from tuxrun.__main__ import main, start
+from tuxrun.__main__ import bind_docker_shell_extra_args, main, start
+from tuxrun.runtimes import Runtime
 
 
 def touch(directory, name):
@@ -754,3 +757,52 @@ def test_boot_args(monkeypatch, mocker, tmpdir, args, cnt):
         # Invalid case
         with pytest.raises(Exception):
             main()
+
+
+class TestBindDockerShellExtraArgs:
+    def test_device_bound_read_write_by_default(self, tmp_path):
+        dev = touch(tmp_path, "i2c-3")
+        runtime = Runtime.select("null")(tmp_path)
+        bind_docker_shell_extra_args(runtime, [f"--device={dev}"])
+        assert runtime.__bindings__ == [(str(dev), dev, False, True)]
+
+    def test_device_honours_read_only_permission(self, tmp_path):
+        dev = touch(tmp_path, "i2c-3")
+        runtime = Runtime.select("null")(tmp_path)
+        bind_docker_shell_extra_args(runtime, [f"--device={dev}:{dev}:r"])
+        assert runtime.__bindings__ == [(str(dev), dev, True, True)]
+
+    def test_device_read_write_permission_kept(self, tmp_path):
+        dev = touch(tmp_path, "i2c-3")
+        runtime = Runtime.select("null")(tmp_path)
+        bind_docker_shell_extra_args(runtime, [f"--device={dev}:{dev}:rw"])
+        assert runtime.__bindings__ == [(str(dev), dev, False, True)]
+
+    def test_device_custom_container_path(self, tmp_path):
+        dev = touch(tmp_path, "i2c-3")
+        runtime = Runtime.select("null")(tmp_path)
+        bind_docker_shell_extra_args(runtime, [f"--device={dev}:/dev/i2c-9"])
+        assert runtime.__bindings__ == [(str(dev), Path("/dev/i2c-9"), False, True)]
+
+    def test_device_empty_host_path_skipped_with_warning(self, tmp_path, caplog):
+        runtime = Runtime.select("null")(tmp_path)
+        with caplog.at_level(logging.WARNING, logger="tuxrun"):
+            bind_docker_shell_extra_args(runtime, ["--device="])
+        assert runtime.__bindings__ == []
+        assert "empty host path" in caplog.text
+
+    def test_device_missing_host_path_skipped_with_warning(self, tmp_path, caplog):
+        missing = tmp_path / "does-not-exist"
+        runtime = Runtime.select("null")(tmp_path)
+        with caplog.at_level(logging.WARNING, logger="tuxrun"):
+            bind_docker_shell_extra_args(runtime, [f"--device={missing}"])
+        assert runtime.__bindings__ == []
+        assert "does not exist" in caplog.text
+
+    def test_volume_read_only_still_works(self, tmp_path):
+        cfg = touch(tmp_path, "config.csv")
+        runtime = Runtime.select("null")(tmp_path)
+        bind_docker_shell_extra_args(runtime, [f"--volume={cfg}:/etc/config.csv:ro"])
+        assert runtime.__bindings__ == [
+            (str(cfg), Path("/etc/config.csv"), True, False)
+        ]
