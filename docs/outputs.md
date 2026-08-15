@@ -48,3 +48,17 @@ The output will be stored in `/abs/or/rel/path/to/output/dir/tests/<test-id>/`.
 ```shell
 tuxrun --device qemu-mips32 --save-outputs --cache-dir /abs/or/rel/path/to/output/dir --log-file -
 ```
+
+## Reproducer
+
+The output directory also contains `reproducer.sh`, the command line that was
+used. The file is executable, so it runs directly:
+
+```shell
+~/.cache/tuxrun/tests/1/reproducer.sh
+```
+
+It is written before the test starts, so it is there also when the test fails.
+
+Values given with `--secrets` are masked, so no token is written to the output
+directory. Put them back before running the script.

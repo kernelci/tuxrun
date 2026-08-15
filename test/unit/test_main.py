@@ -415,6 +415,9 @@ def test_save_output(monkeypatch, tmp_path, run):
         options.results
         == tmp_path / "home" / ".cache" / "tuxrun" / "tests" / "1" / "results.json"
     )
+    assert (
+        tmp_path / "home" / ".cache" / "tuxrun" / "tests" / "1" / "reproducer.sh"
+    ).exists()
 
 
 def test_tuxbuild(get, mocker):

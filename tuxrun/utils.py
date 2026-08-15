@@ -7,6 +7,7 @@
 import argparse
 import os
 import re
+import shlex
 import sys
 from abc import ABC, abstractmethod
 from io import StringIO
@@ -86,6 +87,51 @@ def get_new_output_dir(cache_dir):
         except FileExistsError:
             new += 1
     return new_dir
+
+
+def mask_secrets_reproducer(argv):
+    """Mask the values of --secrets in a command line."""
+
+    def mask(keyvalue):
+        key, sep, _ = keyvalue.partition("=")
+        return key + sep + SECRET_MASK if sep else keyvalue
+
+    masked = []
+    in_secrets = False
+    for arg in argv:
+        if arg.startswith("-") and arg != "-":
+            option, sep, value = arg.partition("=")
+            in_secrets = option == "--secrets"
+            if in_secrets and sep:
+                arg = option + sep + mask(value)
+                in_secrets = False
+        elif in_secrets:
+            arg = mask(arg)
+        masked.append(arg)
+    return masked
+
+
+def save_reproducer(directory, argv):
+    # Write and rename, so a kill mid-write leaves no half written script.
+    path = directory / "reproducer.sh"
+    tmp = directory / "reproducer.sh.tmp"
+    lines = ["tuxrun"]
+    for arg in mask_secrets_reproducer(argv[1:]):
+        # "-" is a value, it means stdout.
+        if arg.startswith("-") and arg != "-":
+            lines.append(shlex.quote(arg))
+        else:
+            lines[-1] += " " + shlex.quote(arg)
+
+    command = " \\\n  ".join(lines)
+    header = "#!/bin/sh\nset -eu\n"
+    if SECRET_MASK in command:
+        header += "# Secrets are masked, put the real values back before running.\n"
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o700)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(header + "exec " + command + "\n")
+    tmp.chmod(0o700)
+    os.replace(tmp, path)
 
 
 def slugify(s):
