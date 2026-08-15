@@ -19,7 +19,7 @@ from tuxrun import requests, xdg
 from tuxrun.yaml import yaml_load
 
 DEFAULT_DISPATCHER_DOWNLOAD_DIR = "/var/lib/lava/dispatcher/tmp"
-SECRET_MASK = "********"
+SECRET_MASK = "XXXXXXXX"
 
 
 class ProgressIndicator(ABC):

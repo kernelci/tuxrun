@@ -90,8 +90,8 @@ secrets:
     assert "anothersecret" not in masked_jobdef
 
     jobdef = yaml_load(masked_jobdef)
-    assert jobdef["secrets"]["avh_api_token"] == "********"
-    assert jobdef["secrets"]["another_secret"] == "********"
+    assert jobdef["secrets"]["avh_api_token"] == "XXXXXXXX"
+    assert jobdef["secrets"]["another_secret"] == "XXXXXXXX"
 
 
 def test_mask_secrets_keeps_a_foreign_token():
