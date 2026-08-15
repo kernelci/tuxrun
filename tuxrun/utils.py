@@ -10,14 +10,11 @@ import re
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from io import StringIO
 from pathlib import Path
 from urllib.parse import urlparse
 
-from ruamel.yaml import YAML
-
 from tuxrun import requests, xdg
-from tuxrun.yaml import yaml_load
+from tuxrun.yaml import yaml_dump, yaml_load
 
 DEFAULT_DISPATCHER_DOWNLOAD_DIR = "/var/lib/lava/dispatcher/tmp"
 SECRET_MASK = "XXXXXXXX"
@@ -200,10 +197,4 @@ def mask_secrets(jobdef: str) -> str:
     # Mask headers anywhere in the structure
     replace_headers(data)
 
-    yaml = YAML(typ="rt")
-    yaml.preserve_quotes = True  # type: ignore
-    yaml_stream = StringIO()
-
-    yaml.dump(data, yaml_stream)
-    masked_jobdef = yaml_stream.getvalue()
-    return masked_jobdef
+    return yaml_dump(data)

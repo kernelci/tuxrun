@@ -7,7 +7,6 @@ mypy
 pytest
 pytest-cov
 pytest-mock
-ruamel.yaml
 types-PyYAML
 types-requests
 tuxpkg

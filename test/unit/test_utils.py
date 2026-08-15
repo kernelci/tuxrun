@@ -144,6 +144,18 @@ def test_mask_secrets_reproducer():
     ]
 
 
+def test_mask_secrets_keeps_the_long_lines():
+    # A kernel command line is long, wrapping it makes the file unreadable
+    long_line = "-append " + "x" * 300
+    masked = mask_secrets(f'a:\n  image_arg: "{long_line}"\n')
+    assert long_line in masked
+
+
+def test_mask_secrets_keeps_a_multi_line_value():
+    jobdef = "a: |\n  one\n  two\n"
+    assert yaml_load(mask_secrets(jobdef))["a"] == "one\ntwo\n"
+
+
 def test_mask_secrets_keeps_a_foreign_token():
     # The definition can come from --job-definition, then tuxrun never saw
     # the values. mask_secrets() finds them by structure.

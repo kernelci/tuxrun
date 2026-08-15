@@ -19,3 +19,7 @@ assert FullLoader is not None
 
 def yaml_load(data):
     return yaml.load(data, Loader=FullLoader)
+
+
+def yaml_dump(data):
+    return yaml.safe_dump(data, sort_keys=False, allow_unicode=True, width=1000000)

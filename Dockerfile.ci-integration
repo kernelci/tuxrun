@@ -6,7 +6,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends --yes ca-certificates curl gnupg && \
     apt-get update && \
     apt-get install --yes podman && \
-    apt-get install --yes python3-jinja2 python3-requests python3-yaml python3-ruamel.yaml linux-image-amd64 && \
+    apt-get install --yes python3-jinja2 python3-requests python3-yaml linux-image-amd64 && \
     rm /usr/sbin/iptables && \
     ln -s /usr/sbin/iptables-legacy /usr/sbin/iptables && \
     apt-get purge --yes gnupg && \
