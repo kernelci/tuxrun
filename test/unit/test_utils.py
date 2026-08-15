@@ -92,3 +92,18 @@ secrets:
     jobdef = yaml_load(masked_jobdef)
     assert jobdef["secrets"]["avh_api_token"] == "********"
     assert jobdef["secrets"]["another_secret"] == "********"
+
+
+def test_mask_secrets_keeps_a_foreign_token():
+    # The definition can come from --job-definition, then tuxrun never saw
+    # the values. mask_secrets() finds them by structure.
+    jobdef = """
+actions:
+- deploy:
+    images:
+      kernel:
+        url: "https://example.com/Image"
+        headers:
+          Authorization: "Bearer foreigntoken"
+"""
+    assert "foreigntoken" not in mask_secrets(jobdef)

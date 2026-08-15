@@ -19,6 +19,7 @@ from tuxrun import requests, xdg
 from tuxrun.yaml import yaml_load
 
 DEFAULT_DISPATCHER_DOWNLOAD_DIR = "/var/lib/lava/dispatcher/tmp"
+SECRET_MASK = "********"
 
 
 class ProgressIndicator(ABC):
@@ -138,7 +139,7 @@ def mask_secrets(jobdef: str) -> str:
                 # reusing the 'HttpDownloadAction'.
                 if key in ["url", "repository"] and isinstance(d.get("headers"), dict):
                     for header_key in d["headers"]:
-                        d["headers"][header_key] = "********"
+                        d["headers"][header_key] = SECRET_MASK
                 else:
                     replace_headers(value)
         elif isinstance(d, list):
@@ -148,7 +149,7 @@ def mask_secrets(jobdef: str) -> str:
     # Mask secrets if they exist
     if "secrets" in data:
         for secret in data["secrets"]:
-            data["secrets"][secret] = "********"
+            data["secrets"][secret] = SECRET_MASK
 
     # Mask headers anywhere in the structure
     replace_headers(data)
