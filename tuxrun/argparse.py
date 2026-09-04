@@ -316,6 +316,15 @@ def setup_parser() -> argparse.ArgumentParser:
         help="directory containing a TuxMake build",
     )
     artefact("test-definitions")
+    group.add_argument(
+        "--test-yaml",
+        action="append",
+        default=[],
+        dest="test_yaml",
+        metavar="YAML",
+        type=pathurlnone,
+        help="File or URL with a LAVA test action to paste into the job. Can be given several times",
+    )
     artefact("uefi")
     group.add_argument(
         "--fvp-ubl-license",
