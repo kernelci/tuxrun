@@ -7,6 +7,7 @@
 
 import argcomplete
 import contextlib
+import inspect
 import ipaddress
 import json
 import logging
@@ -275,6 +276,10 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     }
     if qemu_args:
         def_arguments["qemu_args"] = qemu_args
+    if options.test_yaml:
+        if "test_yaml" not in inspect.signature(Job).parameters:
+            raise TuxLavaException("--test-yaml needs a newer tuxlava")
+        def_arguments["test_yaml"] = options.test_yaml
     job = Job(**def_arguments)
     job.initialize()
     # Copy extra assets already collected by TuxLAVA
