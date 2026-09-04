@@ -24,6 +24,14 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Debian testing's containers-storage does not ship /etc/containers/storage.conf
+# any more, and podman has no built-in fallback for these values. Without the
+# file podman fails with "runroot must be set".
+RUN { echo "[storage]"; \
+      echo 'driver = "overlay"'; \
+      echo 'runroot = "/run/containers/storage"'; \
+      echo 'graphroot = "/var/lib/containers/storage"'; } > /etc/containers/storage.conf
+
 COPY . /tuxrun/
 RUN cd /tuxrun && pip3 install --break-system-packages . && \
     cd - && rm -rf /tuxrun
