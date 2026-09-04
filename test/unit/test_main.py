@@ -1,3 +1,4 @@
+import inspect
 import json
 import logging
 import os
@@ -7,6 +8,7 @@ import pytest
 import shlex
 import yaml
 
+import tuxlava.jobs  # type: ignore
 import tuxrun.__main__
 from tuxrun.__main__ import bind_docker_shell_extra_args, main, start
 from tuxrun.runtimes import Runtime
@@ -1031,3 +1033,76 @@ def test_gdb_vmlinux_for_another_arch(monkeypatch, capsys, run, elf):
 )
 def test_gdb_invalid_options(monkeypatch, capsys, run, args, error):
     assert error in gdb_error(monkeypatch, capsys, *args)
+
+
+TEST_YAML = """\
+- test:
+    timeout:
+      minutes: 7
+    definitions:
+    - repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: oeqa
+          description: "pasted by --test-yaml"
+          os:
+          - linux-any
+          scope:
+          - functional
+        run:
+          steps:
+          - echo hello
+      from: inline
+      path: oeqa
+      name: oeqa
+"""
+
+
+@pytest.mark.skipif(
+    "test_yaml" not in inspect.signature(tuxlava.jobs.Job).parameters,
+    reason="this tuxlava has no test_yaml",
+)
+def test_test_yaml_reaches_the_job(monkeypatch, mocker, lava_run, artefacts):
+    # tuxlava pastes the file into the job, so tuxrun only has to forward it.
+    job = mocker.patch(
+        "tuxrun.__main__.Job", autospec=True, side_effect=tuxrun.__main__.Job
+    )
+    paste = artefacts / "oeqa.yaml"
+    paste.write_text(TEST_YAML, encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "tuxrun",
+            "--device",
+            "qemu-armv5",
+            "--test-yaml",
+            str(paste),
+        ],
+    )
+    lava_run.stderr = []
+    assert main() == 0
+    assert job.call_args.kwargs["test_yaml"] == [f"file://{paste}"]
+
+
+def test_job_gets_no_test_yaml_without_the_option(monkeypatch, mocker, lava_run):
+    job = mocker.patch("tuxrun.__main__.Job", wraps=tuxrun.__main__.Job)
+    monkeypatch.setattr("sys.argv", ["tuxrun", "--device", "qemu-armv5"])
+    lava_run.stderr = []
+    assert main() == 0
+    assert "test_yaml" not in job.call_args.kwargs
+
+
+def test_test_yaml_with_a_tuxlava_without_it(monkeypatch, mocker, capsys, artefacts):
+    class OldJob:
+        def __init__(self, **kwargs):
+            pass
+
+    mocker.patch("tuxrun.__main__.Job", OldJob)
+    paste = artefacts / "oeqa.yaml"
+    paste.write_text(TEST_YAML, encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv", ["tuxrun", "--device", "qemu-armv5", "--test-yaml", str(paste)]
+    )
+    with pytest.raises(SystemExit):
+        main()
+    assert "--test-yaml needs a newer tuxlava" in capsys.readouterr().err

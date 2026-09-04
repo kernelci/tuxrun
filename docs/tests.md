@@ -8,6 +8,19 @@ TuxRun support some tests, each tests is supported on some but not all architect
     tuxrun --list-tests
     ```
 
+## Your own tests
+
+`--test-yaml` pastes the LAVA test action in a file or a URL into the job. It
+can be given several times. tuxlava needs to support it.
+
+```shell
+tuxrun --device qemu-arm64 --test-yaml oeqa.yaml
+```
+
+The file must have one test action with one test definition, and the definition
+must have the same name as the file without `.yaml`. tuxrun looks for the
+results under that name, and it exits with 2 when there are none.
+
 ## FVP AEMvA device
 
 The following tests are supported by the default root filesystem.
