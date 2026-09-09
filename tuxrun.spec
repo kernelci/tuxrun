@@ -19,12 +19,12 @@ BuildRequires: python3-yaml
 BuildRequires: python3-jinja2
 BuildRequires: python3-requests
 BuildRequires: python3-argcomplete
-BuildRequires: tuxlava
+BuildRequires: tuxlava >= 0.26.0
 Requires: python3-argcomplete
 Requires: python3-yaml
 Requires: python3-jinja2
 Requires: python3-requests
-Requires: tuxlava
+Requires: tuxlava >= 0.26.0
 
 BuildArch: noarch
 

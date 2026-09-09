@@ -20,7 +20,7 @@ dependencies = [
     "jinja2",
     "requests",
     "PyYAML",
-    "tuxlava",
+    "tuxlava>=0.26.0",
 ]
 
 [project.urls]
