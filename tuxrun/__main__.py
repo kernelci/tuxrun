@@ -229,6 +229,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "device_dict": options.device_dict,
         "mcp_fw": options.mcp_fw,
         "mcp_romfw": options.mcp_romfw,
+        "downloads": options.downloads,
         "modules": options.modules,
         "overlays": options.overlays,
         "pflash": options.pflash,

@@ -13,6 +13,7 @@ from tuxrun import __version__
 from tuxrun.assets import get_rootfs, get_test_definitions
 from tuxrun.utils import ProgressIndicator, pathurlnone, DEFAULT_DISPATCHER_DOWNLOAD_DIR
 
+from tuxlava.argparse import DownloadAction  # type: ignore
 from tuxlava.devices import Device  # type: ignore
 from tuxlava.tests import Test  # type: ignore
 
@@ -235,6 +236,23 @@ def setup_parser() -> argparse.ArgumentParser:
         nargs="+",
         dest="overlays",
     )
+
+    def download(name, key=None):
+        group.add_argument(
+            f"--{name}",
+            metavar="URL",
+            default={},
+            type=str,
+            help=f"{name} URL. The compression is taken from it",
+            action=DownloadAction,
+            key=key,
+            nargs=1,
+            dest="downloads",
+        )
+
+    download("firmware", key="firmware")
+    download("os", key="os")
+    download("downloads")
     group.add_argument(
         "--partition",
         default=None,

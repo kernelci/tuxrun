@@ -809,3 +809,47 @@ class TestBindDockerShellExtraArgs:
         assert runtime.__bindings__ == [
             (str(cfg), Path("/etc/config.csv"), True, False)
         ]
+
+
+USBG_DEVICE_DICT = """\
+{% set connection_command = 'telnet localhost 2000' %}
+{% set power_on_command = 'laacli power on' %}
+{% set power_off_command = 'laacli power off' %}
+{% set usbg_ms_commands = {
+    'enable': 'laacli usbg-ms on --filename {IMAGE}',
+    'disable': 'laacli usbg-ms off',
+} %}
+"""
+
+
+def test_downloads_reach_the_job(monkeypatch, mocker, lava_run, artefacts):
+    job = mocker.patch("tuxrun.__main__.Job", wraps=tuxrun.__main__.Job)
+    device_dict = artefacts / "usbg.jinja2"
+    device_dict.write_text(USBG_DEVICE_DICT, encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "tuxrun",
+            "--device",
+            "usbg-bcm2711-rpi-4-b",
+            "--device-dict",
+            str(device_dict),
+            "--runtime",
+            "docker",
+            "--parameters",
+            "DISPATCHER_IP=10.0.0.1",
+            "--firmware",
+            "https://e.com/fw.wic.xz",
+            "--os",
+            "https://e.com/os.wic.xz",
+            "--downloads",
+            "https://e.com/packages.tar.gz",
+        ],
+    )
+    lava_run.stderr = []
+    assert main() == 0
+    assert job.call_args.kwargs["downloads"] == {
+        "firmware": "https://e.com/fw.wic.xz",
+        "os": "https://e.com/os.wic.xz",
+        "packages": "https://e.com/packages.tar.gz",
+    }
