@@ -17,7 +17,7 @@ Build-Depends: bash-completion,
                python3-pytest-cov,
                python3-pytest-mock,
                pybuild-plugin-pyproject,
-               tuxlava,
+               tuxlava (>= 0.26.0),
 Standards-Version: 4.6.0.1
 Homepage: https://tuxrun.org/
 
@@ -29,7 +29,7 @@ Depends: python3 (>= 3.10),
          python3-yaml,
          ${misc:Depends},
          ${python3:Depends},
-         tuxlava,
+         tuxlava (>= 0.26.0),
 Description: command line tool for testing Linux with curated test suites
  TuxRun, is a command line tool for testing Linux on QEMU or FVP, using curated
  test suites.  TuxRun is a part of TuxSuite, a suite of tools and services to
