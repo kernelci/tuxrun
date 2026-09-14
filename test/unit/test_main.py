@@ -839,17 +839,20 @@ def test_downloads_reach_the_job(monkeypatch, mocker, lava_run, artefacts):
             "--parameters",
             "DISPATCHER_IP=10.0.0.1",
             "--firmware",
-            "https://e.com/fw.wic.xz",
+            "https://e.com/download?id=A",
+            "fw.wic.xz",
             "--os",
-            "https://e.com/os.wic.xz",
+            "https://e.com/download?id=B",
+            "os.wic.xz",
             "--downloads",
-            "https://e.com/packages.tar.gz",
+            "https://e.com/download?id=C",
+            "packages.tar.gz",
         ],
     )
     lava_run.stderr = []
     assert main() == 0
     assert job.call_args.kwargs["downloads"] == {
-        "firmware": "https://e.com/fw.wic.xz",
-        "os": "https://e.com/os.wic.xz",
-        "packages": "https://e.com/packages.tar.gz",
+        "firmware": ("https://e.com/download?id=A", "fw.wic.xz"),
+        "os": ("https://e.com/download?id=B", "os.wic.xz"),
+        "packages": ("https://e.com/download?id=C", "packages.tar.gz"),
     }

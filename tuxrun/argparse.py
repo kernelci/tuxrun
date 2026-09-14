@@ -240,13 +240,14 @@ def setup_parser() -> argparse.ArgumentParser:
     def download(name, key=None):
         group.add_argument(
             f"--{name}",
-            metavar="URL",
+            metavar=("URL", "FILENAME"),
             default={},
             type=str,
-            help=f"{name} URL. The compression is taken from it",
+            help=f"{name} URL and optionally the file name to save it as. "
+            "The compression is taken from that name",
             action=DownloadAction,
             key=key,
-            nargs=1,
+            nargs="+",
             dest="downloads",
         )
 
