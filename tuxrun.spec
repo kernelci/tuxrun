@@ -1,5 +1,5 @@
 Name:      tuxrun
-Version:   1.10.0
+Version:   1.11.0
 Release:   0%{?dist}
 Summary:   command line tool for testing Linux with curated test suites
 License:   MIT
@@ -69,6 +69,9 @@ ln -sf ../share/%{name}/run %{buildroot}/usr/bin/%{name}
 %license LICENSE
 
 %changelog
+* Tue Sep 15 2026 Anders Roxell <anders.roxell@linaro.org> - 1.11.0-1
+- Release 1.11.0. See: https://github.com/kernelci/tuxrun/releases/tag/v1.11.0
+
 * Fri Jul 24 2026 Anders Roxell <anders.roxell@linaro.org> - 1.10.0-1
 - Release 1.10.0. See: https://github.com/kernelci/tuxrun/releases/tag/v1.10.0
 
