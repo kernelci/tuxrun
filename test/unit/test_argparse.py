@@ -14,3 +14,18 @@ def test_timeouts_parser():
 
     with pytest.raises(SystemExit):
         setup_parser().parse_args(["--timeouts", "booting=1"])
+
+
+def test_downloads_rejects_the_same_name_twice(capsys):
+    with pytest.raises(SystemExit):
+        setup_parser().parse_args(
+            [
+                "--device",
+                "usbg-bcm2711-rpi-4-b",
+                "--downloads",
+                "https://e.com/download?id=A",
+                "--downloads",
+                "https://e.com/download?id=B",
+            ]
+        )
+    assert "downloaded twice" in capsys.readouterr().err
