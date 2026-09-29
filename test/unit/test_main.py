@@ -39,6 +39,11 @@ def run(mocker):
 
 
 @pytest.fixture
+def job(mocker):
+    return mocker.patch("tuxrun.__main__.Job", wraps=tuxrun.__main__.Job)
+
+
+@pytest.fixture
 def tuxrun_args(monkeypatch):
     args = ["tuxrun", "--device", "qemu-armv5"]
     monkeypatch.setattr("sys.argv", args)
@@ -888,3 +893,20 @@ def test_local_downloads_are_bound(monkeypatch, mocker, lava_run, artefacts):
     bound = [c.args[0] for c in bind.call_args_list]
     assert str(firmware) in bound
     assert not [b for b in bound if "e.com" in str(b)]
+
+
+def test_qemu_args_reach_the_job(monkeypatch, lava_run, job):
+    monkeypatch.setattr(
+        "sys.argv",
+        ["tuxrun", "--device", "qemu-arm64", "--qemu-args=-S", "--qemu-args", "-m 2G"],
+    )
+    lava_run.stderr = []
+    assert main() == 0
+    assert job.call_args.kwargs["qemu_args"] == ["-S", "-m 2G"]
+
+
+def test_qemu_args_not_passed_when_unset(monkeypatch, lava_run, job):
+    monkeypatch.setattr("sys.argv", ["tuxrun", "--device", "qemu-arm64"])
+    lava_run.stderr = []
+    assert main() == 0
+    assert "qemu_args" not in job.call_args.kwargs
