@@ -118,6 +118,17 @@ tuxrun --device qemu-armv5 \
        --qemu-image docker.io/qemu/qemu:latest
 ```
 
+## Extra qemu arguments
+
+Add arguments to the qemu command line with `--qemu-args`:
+
+```shell
+tuxrun --device qemu-arm64 \
+       --qemu-args "-m 8G"
+```
+
+For one option, use `--qemu-args=-S`. Give it more than once to add more.
+
 ## Custom command
 
 You can run any command **inside** the VM with:
