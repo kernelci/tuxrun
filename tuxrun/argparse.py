@@ -385,6 +385,13 @@ def setup_parser() -> argparse.ArgumentParser:
         "--boot-args", default=None, metavar="ARGS", help="extend boot arguments"
     )
     group.add_argument(
+        "--qemu-args",
+        default=None,
+        action="append",
+        metavar="ARGS",
+        help="extra qemu arguments, use --qemu-args=-S for one option",
+    )
+    group.add_argument(
         "--prompt", default=None, metavar="PROMPT", help="extra console prompt"
     )
     group.add_argument(

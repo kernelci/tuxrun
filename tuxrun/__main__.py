@@ -256,6 +256,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "tuxmake": options.tuxmake,
         "uefi": options.uefi,
     }
+    if options.qemu_args:
+        def_arguments["qemu_args"] = options.qemu_args
     job = Job(**def_arguments)
     job.initialize()
     # Copy extra assets already collected by TuxLAVA
