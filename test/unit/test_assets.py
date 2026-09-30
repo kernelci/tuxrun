@@ -1,9 +1,11 @@
+import os
 import subprocess
 import time
 from hashlib import sha1
 from pathlib import Path
 
 import pytest
+import requests
 
 from tuxrun.assets import get_rootfs
 from tuxlava.devices import Device  # type: ignore
@@ -81,6 +83,22 @@ class TestGetRootfs:
         rewind_timestamp(r1, seven_hours)
         r2 = get_rootfs(Device.select("qemu-x86_64"))
         assert r1 == r2
+
+    @pytest.mark.parametrize("error", [requests.ConnectionError, KeyboardInterrupt])
+    def test_broken_download_is_not_cached(self, response, home, error):
+        response.iter_content.side_effect = error
+        with pytest.raises(error):
+            get_rootfs(Device.select("qemu-arm64"), "https://example.com/rootfs.img")
+        assert not list((home / ".cache" / "tuxrun" / "assets").iterdir())
+
+    def test_cached_file_follows_the_umask(self, response):
+        response.iter_content.return_value = [b"data"]
+        old = os.umask(0o022)
+        try:
+            rootfs = get_rootfs(Device.select("qemu-arm64"), "https://e.com/r.img")
+        finally:
+            os.umask(old)
+        assert Path(rootfs).stat().st_mode & 0o777 == 0o644
 
     def test_pass_without_cache_when_download_fails(self, get, response):
         get.side_effect = RuntimeError("BOOM")
