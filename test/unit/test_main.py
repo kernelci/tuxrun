@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from pathlib import Path
 
 import pytest
 import shlex
@@ -767,25 +766,25 @@ class TestBindDockerShellExtraArgs:
         dev = touch(tmp_path, "i2c-3")
         runtime = Runtime.select("null")(tmp_path)
         bind_docker_shell_extra_args(runtime, [f"--device={dev}"])
-        assert runtime.__bindings__ == [(str(dev), dev, False, True)]
+        assert runtime.__bindings__ == [(str(dev), str(dev), False, True)]
 
     def test_device_honours_read_only_permission(self, tmp_path):
         dev = touch(tmp_path, "i2c-3")
         runtime = Runtime.select("null")(tmp_path)
         bind_docker_shell_extra_args(runtime, [f"--device={dev}:{dev}:r"])
-        assert runtime.__bindings__ == [(str(dev), dev, True, True)]
+        assert runtime.__bindings__ == [(str(dev), str(dev), True, True)]
 
     def test_device_read_write_permission_kept(self, tmp_path):
         dev = touch(tmp_path, "i2c-3")
         runtime = Runtime.select("null")(tmp_path)
         bind_docker_shell_extra_args(runtime, [f"--device={dev}:{dev}:rw"])
-        assert runtime.__bindings__ == [(str(dev), dev, False, True)]
+        assert runtime.__bindings__ == [(str(dev), str(dev), False, True)]
 
     def test_device_custom_container_path(self, tmp_path):
         dev = touch(tmp_path, "i2c-3")
         runtime = Runtime.select("null")(tmp_path)
         bind_docker_shell_extra_args(runtime, [f"--device={dev}:/dev/i2c-9"])
-        assert runtime.__bindings__ == [(str(dev), Path("/dev/i2c-9"), False, True)]
+        assert runtime.__bindings__ == [(str(dev), "/dev/i2c-9", False, True)]
 
     def test_device_empty_host_path_skipped_with_warning(self, tmp_path, caplog):
         runtime = Runtime.select("null")(tmp_path)
@@ -806,9 +805,7 @@ class TestBindDockerShellExtraArgs:
         cfg = touch(tmp_path, "config.csv")
         runtime = Runtime.select("null")(tmp_path)
         bind_docker_shell_extra_args(runtime, [f"--volume={cfg}:/etc/config.csv:ro"])
-        assert runtime.__bindings__ == [
-            (str(cfg), Path("/etc/config.csv"), True, False)
-        ]
+        assert runtime.__bindings__ == [(str(cfg), "/etc/config.csv", True, False)]
 
 
 USBG_DEVICE_DICT = """\
