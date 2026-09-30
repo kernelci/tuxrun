@@ -460,6 +460,28 @@ def setup_parser() -> argparse.ArgumentParser:
         help="Use qemu from the given path",
     )
 
+    group = parser.add_argument_group("gdb")
+    group.add_argument(
+        "--gdb",
+        default=False,
+        action="store_true",
+        help="start qemu stopped and wait for gdb",
+    )
+    group.add_argument(
+        "--vmlinux",
+        default=None,
+        type=pathurlnone,
+        metavar="URL",
+        help="vmlinux with the symbols for gdb, a path or a URL, can be xz compressed",
+    )
+    group.add_argument(
+        "--kernel-src",
+        default=None,
+        type=Path,
+        metavar="DIR",
+        help="kernel source tree for gdb",
+    )
+
     group = parser.add_argument_group("output")
     group.add_argument(
         "--cache-dir",
