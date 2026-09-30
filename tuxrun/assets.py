@@ -32,6 +32,10 @@ def get_test_definitions(
     )
 
 
+def __temp_file__(path):
+    return path.with_name(f"{path.name}.{os.getpid()}.tmp")
+
+
 def __download_and_cache__(
     url: str, progress: ProgressIndicator = NoProgressIndicator()
 ):
@@ -77,20 +81,23 @@ def __download_and_cache__(
     if cache_etag == etag and cache.exists():
         response.close()
         return str(cache)
-    else:
-        cache_etag_file.write_text(etag)
 
     size = int(response.headers.get("Content-Length", "0"))
+    tmp = __temp_file__(cache)
     try:
-        with cache.open("wb") as data:
+        with tmp.open("wb") as data:
             n = 0
             for chunk in response.iter_content(chunk_size=4096):
                 n += data.write(chunk)
                 if size:
                     progress.progress(100 * n / size)
+        tmp.replace(cache)
     except requests.RequestException as e:
         print(f"Unable to fetch url '{url}': {e}", file=sys.stderr)
         raise
+    finally:
+        tmp.unlink(missing_ok=True)
+    cache_etag_file.write_text(etag)
 
     if size:
         progress.finish()
