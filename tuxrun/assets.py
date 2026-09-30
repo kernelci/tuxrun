@@ -4,8 +4,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+import lzma
 import os
 import re
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -13,10 +15,13 @@ from urllib.parse import urlparse
 
 import requests
 
+from tuxrun.exceptions import InvalidArgument
 from tuxrun.requests import requests_get
 from tuxrun.utils import NoProgressIndicator, ProgressIndicator, pathurlnone
 from tuxrun.xdg import get_cache_dir
 from tuxlava.jobs import TEST_DEFINITIONS  # type: ignore
+
+XZ_MAGIC = b"\xfd7zXZ\x00"
 
 
 def get_rootfs(
@@ -31,6 +36,36 @@ def get_test_definitions(
     return pathurlnone(
         __download_and_cache__(test_definitions or TEST_DEFINITIONS, progress)
     )
+
+
+def get_vmlinux(
+    vmlinux: str, progress: ProgressIndicator = NoProgressIndicator()
+) -> Path:
+    if urlparse(vmlinux).scheme in ["http", "https"]:
+        try:
+            path = __download__(vmlinux, progress)
+        except requests.RequestException as exc:
+            raise InvalidArgument(f"argument --vmlinux: unable to download: {exc}")
+    else:
+        path = Path(vmlinux.removeprefix("file://"))
+    if not path.is_file():
+        raise InvalidArgument(f"argument --vmlinux: not a file '{vmlinux}'")
+    with path.open("rb") as f:
+        if f.read(6) != XZ_MAGIC:
+            return path
+
+    out = __cache_dir__() / "unxz" / __cache_key__(vmlinux).removesuffix(".xz")
+    out.parent.mkdir(exist_ok=True)
+    tmp = __temp_file__(out)
+    try:
+        with lzma.open(path) as src, tmp.open("wb") as dst:
+            shutil.copyfileobj(src, dst)
+        tmp.replace(out)
+    except (lzma.LZMAError, EOFError, OSError) as exc:
+        raise InvalidArgument(f"argument --vmlinux: '{vmlinux}': {exc}")
+    finally:
+        tmp.unlink(missing_ok=True)
+    return out
 
 
 def __cache_dir__():

@@ -1,3 +1,4 @@
+import lzma
 import os
 import subprocess
 import time
@@ -7,7 +8,8 @@ from pathlib import Path
 import pytest
 import requests
 
-from tuxrun.assets import __download__, get_rootfs
+from tuxrun.assets import __download__, get_rootfs, get_vmlinux
+from tuxrun.exceptions import InvalidArgument
 from tuxlava.devices import Device  # type: ignore
 
 seven_hours = 7 * 60 * 60
@@ -134,6 +136,67 @@ class TestDownload:
         path = __download__(self.url)
         rewind_timestamp(path, seven_hours)
         assert __download__(self.url) == path
+
+
+class TestGetVmlinux:
+    @pytest.mark.parametrize("name", ["vmlinux", "vmlinux.xz"])
+    def test_local(self, tmp_path, name):
+        vmlinux = tmp_path / name
+        vmlinux.write_bytes(lzma.compress(b"elf") if name.endswith(".xz") else b"elf")
+        assert get_vmlinux(str(vmlinux)).read_bytes() == b"elf"
+
+    @pytest.mark.parametrize(
+        "name,headers",
+        [
+            ("vmlinux", None),
+            ("vmlinux.xz", None),
+            ("vmlinux", {}),
+            ("vmlinux.xz?token=abc", None),
+        ],
+    )
+    def test_url(self, response, name, headers):
+        if headers is not None:
+            response.headers = headers
+        data = lzma.compress(b"elf") if ".xz" in name else b"elf"
+        response.iter_content.return_value = [data]
+        vmlinux = get_vmlinux(f"https://example.com/{name}")
+        assert vmlinux.read_bytes() == b"elf"
+
+    def test_xz_does_not_replace_the_plain_download(self, response):
+        response.iter_content.return_value = [b"plain"]
+        plain = get_vmlinux("https://example.com/vmlinux")
+        response.iter_content.return_value = [lzma.compress(b"unxz")]
+        unxz = get_vmlinux("https://example.com/vmlinux.xz")
+        assert (plain.read_bytes(), unxz.read_bytes()) == (b"plain", b"unxz")
+
+    def test_truncated_xz(self, tmp_path, home):
+        vmlinux = tmp_path / "vmlinux.xz"
+        vmlinux.write_bytes(lzma.compress(b"elf" * 1000)[:-10])
+        with pytest.raises(InvalidArgument, match="vmlinux.xz"):
+            get_vmlinux(str(vmlinux))
+        assert not list(home.rglob("*.tmp"))
+
+    def test_download_breaks(self, response):
+        response.iter_content.side_effect = requests.ConnectionError("reset")
+        with pytest.raises(InvalidArgument, match="unable to download: reset"):
+            get_vmlinux("https://example.com/vmlinux")
+
+    def test_local_xz_with_an_older_mtime(self, tmp_path):
+        vmlinux = tmp_path / "vmlinux.xz"
+        vmlinux.write_bytes(lzma.compress(b"old"))
+        assert get_vmlinux(str(vmlinux)).read_bytes() == b"old"
+        vmlinux.write_bytes(lzma.compress(b"new"))
+        os.utime(vmlinux, (0, 0))
+        assert get_vmlinux(str(vmlinux)).read_bytes() == b"new"
+
+    def test_not_a_file(self, tmp_path):
+        with pytest.raises(InvalidArgument, match="not a file"):
+            get_vmlinux(str(tmp_path))
+
+    def test_download_fails(self, get):
+        get.side_effect = requests.ConnectionError("boom")
+        with pytest.raises(InvalidArgument, match="unable to download"):
+            get_vmlinux("https://example.com/vmlinux")
 
 
 if __name__ == "__main__":

@@ -129,6 +129,29 @@ tuxrun --device qemu-arm64 \
 
 For one option, use `--qemu-args=-S`. Give it more than once to add more.
 
+## Debugging with gdb
+
+With `--gdb`, qemu waits for gdb before the kernel starts. TuxRun also
+adds `nokaslr`, so the symbols match.
+
+```shell
+tuxrun --device qemu-arm64 \
+       --kernel https://storage.tuxboot.com/kernels/6.18.54/arm64/Image.gz \
+       --gdb \
+       --vmlinux https://storage.tuxboot.com/kernels/6.18.54/arm64/vmlinux.xz \
+       --kernel-src ~/src/linux
+```
+
+When the boot starts, TuxRun prints the gdb command. Run it in another
+terminal.
+
+`--vmlinux` gives gdb the symbols. It can be a path or a URL and can be
+xz compressed. `--kernel-src` gives gdb the source of the same kernel
+version. Both are optional, but `--kernel-src` needs `--vmlinux`.
+
+The boot timeout still counts while you are in gdb. Use
+`--timeouts boot=60` to get more time.
+
 ## Custom command
 
 You can run any command **inside** the VM with:

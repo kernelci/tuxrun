@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import tempfile
 
 import pytest
 import shlex
@@ -910,3 +911,123 @@ def test_qemu_args_not_passed_when_unset(monkeypatch, lava_run, job):
     lava_run.stderr = []
     assert main() == 0
     assert "qemu_args" not in job.call_args.kwargs
+
+
+BOOT_COMMAND = '{"dt": "t", "lvl": "info", "msg": "Boot command: qemu"}\n'
+
+
+def gdb_argv(monkeypatch, *args):
+    argv = ["tuxrun", "--runtime", "docker", "--device", "qemu-arm64"]
+    monkeypatch.setattr("sys.argv", argv + list(map(str, args)))
+
+
+def gdb_main(monkeypatch, lava_run, *args, lines=(BOOT_COMMAND,)):
+    gdb_argv(monkeypatch, "--gdb", *args)
+    lava_run.stderr = list(lines)
+    assert main() == 0
+
+
+def gdb_error(monkeypatch, capsys, *args):
+    gdb_argv(monkeypatch, *args)
+    with pytest.raises(SystemExit):
+        main()
+    return capsys.readouterr().err
+
+
+def test_gdb_adds_the_qemu_and_boot_args(monkeypatch, lava_run, job):
+    gdb_main(monkeypatch, lava_run, "--qemu-args", "-m 2G", "--boot-args", "rw")
+    qemu_args = job.call_args.kwargs["qemu_args"]
+    assert qemu_args[0] == "-m 2G"
+    assert qemu_args[1].startswith("-S -gdb unix:path=/")
+    assert qemu_args[1].endswith("/gdb.sock,server=on,wait=off")
+    assert job.call_args.kwargs["boot_args"] == "rw nokaslr"
+
+
+def test_gdb_binds_and_prints_the_command(
+    monkeypatch, lava_run, lava_run_call, tmp_path, caplog, elf
+):
+    vmlinux = elf(183, 64, "little")
+    src = tmp_path / "linux"
+    src.mkdir()
+    gdb_main(monkeypatch, lava_run, "--vmlinux", vmlinux, "--kernel-src", src)
+    args = lava_run_call.call_args.args[0]
+    assert f"{vmlinux}:/tuxrun/vmlinux:ro" in args
+    assert f"{src}:/tuxrun/src:ro" in args
+    assert "docker exec -it tuxrun-" in caplog.text
+    assert "gdb-multiarch -q /tuxrun/vmlinux -x /" in caplog.text
+    assert "/gdb.py" in caplog.text
+
+
+def test_gdb_command_waits_for_qemu(monkeypatch, lava_run, caplog):
+    gdb_main(monkeypatch, lava_run, lines=())
+    assert "gdb-multiarch" not in caplog.text
+
+
+def test_gdb_command_on_every_boot(monkeypatch, lava_run, caplog):
+    gdb_main(monkeypatch, lava_run, lines=(BOOT_COMMAND, BOOT_COMMAND))
+    assert caplog.text.count("gdb-multiarch") == 2
+
+
+def test_gdb_vmlinux_can_be_the_kernel(monkeypatch, lava_run, lava_run_call, elf):
+    vmlinux = elf(8, 32, "big")
+    gdb_main(
+        monkeypatch,
+        lava_run,
+        "--device",
+        "qemu-mips32",
+        "--kernel",
+        vmlinux,
+        "--vmlinux",
+        vmlinux,
+    )
+    args = lava_run_call.call_args.args[0]
+    assert args.count(f"{vmlinux}:{vmlinux}:ro") == 1
+
+
+def test_gdb_needs_a_device(monkeypatch, capsys, run):
+    monkeypatch.setattr("sys.argv", ["tuxrun", "--tuxbuild", "https://x/", "--gdb"])
+    with pytest.raises(SystemExit):
+        main()
+    assert "argument --gdb needs --device" in capsys.readouterr().err
+
+
+def test_gdb_unknown_device_dict_device(monkeypatch, capsys, run, tmp_path):
+    device_dict = tmp_path / "board.jinja2"
+    device_dict.touch()
+    argv = ["tuxrun", "--device-dict", str(device_dict), "--device", "my-board"]
+    argv += ["--parameters", "DISPATCHER_IP=10.0.0.1", "--gdb"]
+    monkeypatch.setattr("sys.argv", argv)
+    with pytest.raises(SystemExit):
+        main()
+    assert "tuxrun: error:" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("name", ["x" * 100, "a,b", "a b"])
+def test_gdb_bad_tmpdir(monkeypatch, capsys, lava_run, tmp_path, name):
+    (tmp_path / name).mkdir()
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path / name))
+    err = gdb_error(monkeypatch, capsys, "--gdb")
+    assert "argument --gdb: bad TMPDIR for qemu" in err
+
+
+def test_gdb_vmlinux_for_another_arch(monkeypatch, capsys, run, elf):
+    err = gdb_error(monkeypatch, capsys, "--gdb", "--vmlinux", elf(62, 64, "little"))
+    assert "argument --vmlinux: built for x86_64, not arm64" in err
+
+
+@pytest.mark.parametrize(
+    "args,error",
+    [
+        (["--vmlinux", "."], "arguments --vmlinux and --kernel-src need --gdb"),
+        (["--kernel-src", "."], "arguments --vmlinux and --kernel-src need --gdb"),
+        (["--gdb", "--kernel-src", "."], "argument --kernel-src needs --vmlinux"),
+        (["--gdb", "--vmlinux", "missing"], "missing no such file or directory"),
+        (
+            ["--gdb", "--qemu-image", "img"],
+            "--gdb cannot be combined with --qemu-image",
+        ),
+        (["--gdb", "--device", "fvp-aemva"], "--gdb is only valid for qemu devices"),
+    ],
+)
+def test_gdb_invalid_options(monkeypatch, capsys, run, args, error):
+    assert error in gdb_error(monkeypatch, capsys, *args)
