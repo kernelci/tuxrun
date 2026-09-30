@@ -43,9 +43,9 @@ class Runtime:
         return NullRuntime
 
     def bind(self, src, dst=None, ro=False, device=False):
-        if dst is None:
-            dst = src
-        self.__bindings__.append((str(src), dst, ro, device))
+        binding = (str(src), str(src if dst is None else dst), ro, device)
+        if binding not in self.__bindings__:
+            self.__bindings__.append(binding)
 
     def image(self, image):
         self.__image__ = image
