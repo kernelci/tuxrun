@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from tuxrun.assets import get_rootfs
+from tuxrun.assets import __download__, get_rootfs
 from tuxlava.devices import Device  # type: ignore
 
 seven_hours = 7 * 60 * 60
@@ -84,6 +84,11 @@ class TestGetRootfs:
         r2 = get_rootfs(Device.select("qemu-x86_64"))
         assert r1 == r2
 
+    def test_rootfs_without_etag_is_not_cached(self, response):
+        response.headers = {}
+        url = "https://example.com/rootfs.img"
+        assert get_rootfs(Device.select("qemu-arm64"), url) == url
+
     @pytest.mark.parametrize("error", [requests.ConnectionError, KeyboardInterrupt])
     def test_broken_download_is_not_cached(self, response, home, error):
         response.iter_content.side_effect = error
@@ -106,6 +111,29 @@ class TestGetRootfs:
             get_rootfs(Device.select("qemu-x86_64"))
             == "https://storage.tuxboot.com/buildroot/x86_64/rootfs.ext4.zst"
         )
+
+
+class TestDownload:
+    url = "https://example.com/vmlinux"
+
+    def test_caches_without_etag(self, response):
+        response.headers = {}
+        response.iter_content.return_value = [b"data"]
+        path = __download__(self.url)
+        assert path.read_bytes() == b"data"
+        assert not path.with_name(path.name + ".etag").exists()
+
+    def test_raises_when_the_request_fails(self, get):
+        get.side_effect = requests.ConnectionError("boom")
+        with pytest.raises(requests.ConnectionError):
+            __download__(self.url)
+
+    def test_uses_the_cache_when_the_request_fails(self, get, response):
+        response.iter_content.return_value = [b"data"]
+        get.side_effect = [response, requests.ConnectionError("boom")]
+        path = __download__(self.url)
+        rewind_timestamp(path, seven_hours)
+        assert __download__(self.url) == path
 
 
 if __name__ == "__main__":
