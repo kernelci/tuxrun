@@ -4,18 +4,24 @@
 #
 # SPDX-License-Identifier: MIT
 
+import lzma
 import os
 import re
+import shutil
 import sys
 import time
+from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
 
+from tuxrun.exceptions import InvalidArgument
 from tuxrun.requests import requests_get
 from tuxrun.utils import NoProgressIndicator, ProgressIndicator, pathurlnone
 from tuxrun.xdg import get_cache_dir
 from tuxlava.jobs import TEST_DEFINITIONS  # type: ignore
+
+XZ_MAGIC = b"\xfd7zXZ\x00"
 
 
 def get_rootfs(
@@ -32,6 +38,114 @@ def get_test_definitions(
     )
 
 
+def get_vmlinux(
+    vmlinux: str, progress: ProgressIndicator = NoProgressIndicator()
+) -> Path:
+    if urlparse(vmlinux).scheme in ["http", "https"]:
+        try:
+            path = __download__(vmlinux, progress)
+        except requests.RequestException as exc:
+            raise InvalidArgument(f"argument --vmlinux: unable to download: {exc}")
+    else:
+        path = Path(vmlinux.removeprefix("file://"))
+    if not path.is_file():
+        raise InvalidArgument(f"argument --vmlinux: not a file '{vmlinux}'")
+    with path.open("rb") as f:
+        if f.read(6) != XZ_MAGIC:
+            return path
+
+    out = __cache_dir__() / "unxz" / __cache_key__(vmlinux).removesuffix(".xz")
+    out.parent.mkdir(exist_ok=True)
+    tmp = __temp_file__(out)
+    try:
+        with lzma.open(path) as src, tmp.open("wb") as dst:
+            shutil.copyfileobj(src, dst)
+        tmp.replace(out)
+    except (lzma.LZMAError, EOFError, OSError) as exc:
+        raise InvalidArgument(f"argument --vmlinux: '{vmlinux}': {exc}")
+    finally:
+        tmp.unlink(missing_ok=True)
+    return out
+
+
+def __cache_dir__():
+    cache_dir = get_cache_dir().resolve() / "assets"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir
+
+
+def __cache_key__(url):
+    return re.sub(r"[:/]", "_", url)
+
+
+def __temp_file__(path):
+    return path.with_name(f"{path.name}.{os.getpid()}.tmp")
+
+
+def __cache_is_fresh__(cache):
+    timeout = 6 * 60 * 60
+    return cache.exists() and (time.time() - os.stat(cache).st_mtime) <= timeout
+
+
+def __get__(url):
+    response = requests_get(url, allow_redirects=True, stream=True)
+    response.raise_for_status()
+    return response
+
+
+def __save__(response, url, cache, progress):
+    etag_file = cache.with_name(cache.name + ".etag")
+    etag = response.headers.get("ETag")
+    if etag is not None:
+        etag = str(etag)
+        cached = cache.exists() and etag_file.exists()
+        if cached and etag_file.read_text() == etag:
+            response.close()
+            return cache
+
+    size = int(response.headers.get("Content-Length", "0"))
+    tmp = __temp_file__(cache)
+    try:
+        with tmp.open("wb") as data:
+            n = 0
+            for chunk in response.iter_content(chunk_size=4096):
+                n += data.write(chunk)
+                if size:
+                    progress.progress(100 * n / size)
+        tmp.replace(cache)
+    except requests.RequestException as e:
+        print(f"Unable to fetch url '{url}': {e}", file=sys.stderr)
+        raise
+    finally:
+        tmp.unlink(missing_ok=True)
+
+    if etag is None:
+        etag_file.unlink(missing_ok=True)
+    else:
+        etag_file.write_text(etag)
+
+    if size:
+        progress.finish()
+
+    return cache.resolve()
+
+
+def __download__(url: str, progress: ProgressIndicator = NoProgressIndicator()) -> Path:
+    cache = __cache_dir__() / __cache_key__(url)
+    if __cache_is_fresh__(cache):
+        return cache
+
+    try:
+        response = __get__(url)
+    except requests.RequestException as e:
+        if cache.exists():
+            print(e, "Continuing with cached version of the file", file=sys.stderr)
+            return cache
+        raise
+
+    return __save__(response, url, cache, progress)
+
+
 def __download_and_cache__(
     url: str, progress: ProgressIndicator = NoProgressIndicator()
 ):
@@ -39,30 +153,12 @@ def __download_and_cache__(
     if parsed.scheme not in ["http", "https"]:
         return url
 
-    key = re.sub(r"[:/]", "_", url)
-
-    cache_dir = get_cache_dir().resolve() / "assets"
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    cache = cache_dir / key
-    cache_etag_file = cache_dir / (key + ".etag")
-
-    expired = False
-    if cache.exists():
-        timestamp = os.stat(cache).st_mtime
-        now = time.time()
-        timeout = 6 * 60 * 60  # 6 hours
-
-        expired = (now - timestamp) > timeout
-        if not expired:
-            return str(cache)
+    cache = __cache_dir__() / __cache_key__(url)
+    if __cache_is_fresh__(cache):
+        return str(cache)
 
     try:
-        response = requests_get(url, allow_redirects=True, stream=True)
-        response.raise_for_status()
-        etag = str(response.headers["ETag"])
-    except KeyError:
-        print("Missing ETag, continuing without cache", file=sys.stderr)
-        return url
+        response = __get__(url)
     except Exception as e:
         if cache.exists():
             print(e, "Continuing with cached version of the file", file=sys.stderr)
@@ -70,29 +166,9 @@ def __download_and_cache__(
         # return url as LAVA will check if it exists and it will show up in the logfile.
         return url
 
-    if cache_etag_file.exists():
-        cache_etag = cache_etag_file.read_text()
-    else:
-        cache_etag = None
-    if cache_etag == etag and cache.exists():
+    if response.headers.get("ETag") is None:
         response.close()
-        return str(cache)
-    else:
-        cache_etag_file.write_text(etag)
+        print("Missing ETag, continuing without cache", file=sys.stderr)
+        return url
 
-    size = int(response.headers.get("Content-Length", "0"))
-    try:
-        with cache.open("wb") as data:
-            n = 0
-            for chunk in response.iter_content(chunk_size=4096):
-                n += data.write(chunk)
-                if size:
-                    progress.progress(100 * n / size)
-    except requests.RequestException as e:
-        print(f"Unable to fetch url '{url}': {e}", file=sys.stderr)
-        raise
-
-    if size:
-        progress.finish()
-
-    return str(cache.resolve())
+    return str(__save__(response, url, cache, progress))

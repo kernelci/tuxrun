@@ -396,3 +396,26 @@ def test_bind_volume_read_only_still_renders_ro(tmp_path):
     cmd = runtime.cmd(["hello"])
     idx = cmd.index("/etc/config:/etc/config:ro")
     assert cmd[idx - 1] == "-v"
+
+
+def test_bind_skips_duplicates(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.bind("/vmlinux", ro=True)
+    runtime.bind(Path("/vmlinux"), ro=True)
+    assert runtime.cmd(["lava-run"]).count("/vmlinux:/vmlinux:ro") == 1
+
+
+def test_bind_ro_and_rw_fails(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.bind("/src", ro=True)
+    runtime.bind("/src")
+    with pytest.raises(Exception, match="Duplicated mount destination"):
+        runtime.cmd(["lava-run"])
+
+
+def test_bind_same_destination_twice_fails(tmp_path):
+    runtime = Runtime.select("podman")(tmp_path)
+    runtime.bind("/a", "/vmlinux", ro=True)
+    runtime.bind("/b", "/vmlinux", ro=True)
+    with pytest.raises(Exception, match="Duplicated mount destination"):
+        runtime.cmd(["lava-run"])

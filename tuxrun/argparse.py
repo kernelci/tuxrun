@@ -385,6 +385,13 @@ def setup_parser() -> argparse.ArgumentParser:
         "--boot-args", default=None, metavar="ARGS", help="extend boot arguments"
     )
     group.add_argument(
+        "--qemu-args",
+        default=None,
+        action="append",
+        metavar="ARGS",
+        help="extra qemu arguments, use --qemu-args=-S for one option",
+    )
+    group.add_argument(
         "--prompt", default=None, metavar="PROMPT", help="extra console prompt"
     )
     group.add_argument(
@@ -451,6 +458,28 @@ def setup_parser() -> argparse.ArgumentParser:
         default=None,
         type=Path,
         help="Use qemu from the given path",
+    )
+
+    group = parser.add_argument_group("gdb")
+    group.add_argument(
+        "--gdb",
+        default=False,
+        action="store_true",
+        help="start qemu stopped and wait for gdb",
+    )
+    group.add_argument(
+        "--vmlinux",
+        default=None,
+        type=pathurlnone,
+        metavar="URL",
+        help="vmlinux with the symbols for gdb, a path or a URL, can be xz compressed",
+    )
+    group.add_argument(
+        "--kernel-src",
+        default=None,
+        type=Path,
+        metavar="DIR",
+        help="kernel source tree for gdb",
     )
 
     group = parser.add_argument_group("output")

@@ -25,7 +25,14 @@ sys.path.append("/usr/share/tuxlava")
 
 from tuxrun import templates  # noqa: E402
 from tuxrun.argparse import filter_artefacts, pathurlnone, setup_parser  # noqa: E402
-from tuxrun.assets import get_rootfs, get_test_definitions  # noqa: E402
+from tuxrun.assets import get_rootfs, get_test_definitions, get_vmlinux  # noqa: E402
+from tuxrun.exceptions import InvalidArgument  # noqa: E402
+from tuxrun.gdb import (  # noqa: E402
+    attach_message,
+    check_vmlinux,
+    gdb_command,
+    gdb_script,
+)
 from tuxrun.results import Results  # noqa: E402
 from tuxrun.runtimes import Runtime  # noqa: E402
 from tuxrun.templates import wrappers  # noqa: E402
@@ -41,6 +48,7 @@ from tuxrun.writer import Writer  # noqa: E402
 from tuxrun.yaml import yaml_load  # noqa: E402
 
 from tuxlava.devices import Device  # type: ignore  # noqa: E402
+from tuxlava.devices.qemu import QemuDevice  # type: ignore  # noqa: E402
 from tuxlava.jobs import Job  # type: ignore  # noqa: E402
 from tuxlava.exceptions import TuxLavaException  # type: ignore # noqa: E402
 
@@ -210,11 +218,20 @@ def bind_docker_shell_extra_args(runtime, extra_args):
 # Entrypoint #
 ##############
 def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> int:
+    qemu_args = options.qemu_args or []
+    boot_args = options.boot_args
+    gdb_socket = tmpdir / "gdb.sock"
+    if options.gdb:
+        if len(str(gdb_socket)) > 107 or re.search(r"[,\s]", str(gdb_socket)):
+            raise InvalidArgument(f"argument --gdb: bad TMPDIR for qemu: {tmpdir}")
+        qemu_args = qemu_args + [f"-S -gdb unix:path={gdb_socket},server=on,wait=off"]
+        boot_args = " ".join(filter(None, [boot_args, "nokaslr"]))
+
     def_arguments = {
         "ap_romfw": options.ap_romfw,
         "bios": options.bios,
         "bl1": options.bl1,
-        "boot_args": options.boot_args,
+        "boot_args": boot_args,
         "cache_dir": cache_dir,
         "commands": options.commands,
         "device": options.device,
@@ -256,6 +273,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         "tuxmake": options.tuxmake,
         "uefi": options.uefi,
     }
+    if qemu_args:
+        def_arguments["qemu_args"] = qemu_args
     job = Job(**def_arguments)
     job.initialize()
     # Copy extra assets already collected by TuxLAVA
@@ -354,6 +373,20 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
     if job.qemu_binary:
         overlay_qemu(job.qemu_binary, tmpdir, runtime)
 
+    gdb = None
+    if options.gdb:
+        vmlinux, src = options.vmlinux, options.kernel_src
+        if runtime.container:
+            if vmlinux:
+                runtime.bind(vmlinux, "/tuxrun/vmlinux", ro=True)
+                vmlinux = "/tuxrun/vmlinux"
+            if src:
+                runtime.bind(src, "/tuxrun/src", ro=True)
+                src = "/tuxrun/src"
+        script = tmpdir / "gdb.py"
+        script.write_text(gdb_script(gdb_socket, src), encoding="utf-8")
+        gdb = gdb_command(runtime, tmpdir.name, vmlinux, script)
+
     if options.device_dict:
         runtime.use_host_network()
         runtime.skip_http_server()
@@ -432,6 +465,8 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         with runtime.run(args):
             for line in runtime.lines():
                 writer.write(line)
+                if gdb and "Boot command:" in line:
+                    LOG.info(attach_message(gdb))
                 res = results.parse(line)
                 # Start an xterm if an hacking session url is available
                 if hacking_session and res:
@@ -471,6 +506,39 @@ def normalize_ip(value):
         raise ValueError(f"Invalid IP address: {value!r}")
 
 
+def setup_gdb(parser, options):
+    if not options.gdb:
+        if options.vmlinux or options.kernel_src:
+            parser.error("arguments --vmlinux and --kernel-src need --gdb")
+        return
+    if not options.device:
+        parser.error("argument --gdb needs --device")
+    try:
+        device = Device.select(options.device)
+    except TuxLavaException as exc:
+        parser.error(str(exc))
+    if not issubclass(device, QemuDevice):
+        parser.error("argument --gdb is only valid for qemu devices")
+    if options.qemu_image:
+        parser.error("argument --gdb cannot be combined with --qemu-image")
+    if options.kernel_src:
+        if not options.vmlinux:
+            parser.error("argument --kernel-src needs --vmlinux")
+        if not options.kernel_src.is_dir():
+            parser.error(
+                f"argument --kernel-src: no such directory '{options.kernel_src}'"
+            )
+        options.kernel_src = options.kernel_src.resolve()
+    if options.vmlinux:
+        try:
+            options.vmlinux = get_vmlinux(
+                options.vmlinux, ProgressIndicator.get("Downloading vmlinux")
+            )
+            check_vmlinux(options.vmlinux, device.arch)
+        except InvalidArgument as exc:
+            parser.error(str(exc))
+
+
 def main() -> int:
     parser = setup_parser()
     argcomplete.autocomplete(parser)
@@ -502,6 +570,8 @@ def main() -> int:
         options.enable_network = True
         if not options.parameters.get("PUB_KEY"):
             parser.error("argument missing --parameters PUB_KEY='...'")
+
+    setup_gdb(parser, options)
 
     cache_dir = None
     if options.lava_definition or options.results_hooks or options.shared == []:
@@ -544,7 +614,7 @@ def main() -> int:
     LOG.debug(f"temporary directory: '{tmpdir}'")
     try:
         return run(options, tmpdir, cache_dir, artefacts)
-    except TuxLavaException as exc:
+    except (TuxLavaException, InvalidArgument) as exc:
         parser.error(str(exc))
     except FileNotFoundError as exc:
         err_msg = (
