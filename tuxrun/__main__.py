@@ -485,6 +485,11 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
             sys.stdout.write(json.dumps(results.data) + "\n")
         else:
             options.results.write_text(json.dumps(results.data))
+    if options.results_junit:
+        if str(options.results_junit) == "-":
+            sys.stdout.write(results.junit() + "\n")
+        else:
+            options.results_junit.write_text(results.junit(), encoding="utf-8")
     if options.metadata:
         if str(options.metadata) == "-":
             sys.stdout.write(json.dumps(results.metadata) + "\n")
