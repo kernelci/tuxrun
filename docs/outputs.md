@@ -26,6 +26,22 @@ tests. The file can be dumped on the file system as `json`:
 tuxrun --device qemu-armv5 --results results.json
 ```
 
+The results can also be saved as JUnit XML, for example for the test report
+of a GitLab job:
+
+```shell
+tuxrun --device qemu-armv5 --results-junit junit.xml
+```
+
+With `-` the XML goes to the standard output.
+
+A failed test case is a `failure`, a skipped one is `skipped` and any other
+result is an `error`. A test that was asked for but has no results, like when
+the board doesn't boot, is an `error` too. JUnit has no field for a
+measurement, so it goes into `system-out`. The `system-out` of a test case also
+has the board output between its STARTTC and ENDTC (`lava-test-case --shell` or
+`--output`), or else only its signal line, if it has one.
+
 ## Outputs
 
 TuxRun can collect and dump to the filesystem every outputs with:

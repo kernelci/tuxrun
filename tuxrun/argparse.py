@@ -497,6 +497,12 @@ def setup_parser() -> argparse.ArgumentParser:
         "--results", default=None, type=Path, help="Save test results to file (JSON)"
     )
     group.add_argument(
+        "--results-junit",
+        default=None,
+        type=Path,
+        help="Save test results to file (JUnit XML)",
+    )
+    group.add_argument(
         "--lava-definition",
         default=False,
         action="store_true",

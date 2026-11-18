@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 
@@ -108,6 +109,163 @@ def test_results_parsing(name, testsuite):
         )
     data = (BASE / "results" / (name + "-metadata.json")).read_text(encoding="utf-8")
     assert results.metadata == json.loads(data)
+
+
+def junit_suites(results):
+    root = ElementTree.fromstring(results.junit())
+    assert root.tag == "testsuites"
+    return {suite.get("name"): suite for suite in root.findall("testsuite")}
+
+
+def dated(dt):
+    return json.dumps({"dt": dt, "lvl": "target", "msg": "line"})
+
+
+@pytest.mark.parametrize(
+    "dts",
+    [
+        ["2026-11-19T18:47:29", "not a date"],
+        ["2026-11-19T18:47:29", "2026-11-19T18:47:30+00:00"],
+    ],
+)
+def test_junit_without_a_job_time_when_the_dates_are_odd(dts):
+    results = Results([], {})
+    for dt in dts:
+        results.parse(dated(dt))
+    results.parse(gen_test("job", "pass", suite_name="lava"))
+
+    root = ElementTree.fromstring(results.junit())
+    assert root.get("time") is None
+    assert root.find("testsuite").get("time") is None
+
+
+def test_junit_counts_pass_fail_skip():
+    t1 = Test(timeout=None)
+    t1.name = "mytestsuite"
+    results = Results([t1], {})
+    results.parse(gen_test("job", "pass", suite_name="lava"))
+    results.parse(gen_test("test1", "pass"))
+    results.parse(gen_test("test2", "fail"))
+    results.parse(gen_test("test3", "skip"))
+
+    suite = junit_suites(results)["mytestsuite"]
+    assert suite.get("tests") == "3"
+    assert suite.get("failures") == "1"
+    assert suite.get("skipped") == "1"
+    assert suite.get("errors") == "0"
+    cases = {case.get("name"): case for case in suite.findall("testcase")}
+    assert cases["test1"].find("failure") is None
+    assert cases["test2"].find("failure").get("message") == "fail"
+    assert cases["test3"].find("skipped") is not None
+    assert cases["test1"].get("classname") == "mytestsuite"
+
+
+def test_junit_unknown_result_is_an_error():
+    results = Results([], {})
+    results.parse(gen_test("job", "unknown", suite_name="lava"))
+
+    suite = junit_suites(results)["lava"]
+    assert suite.get("errors") == "1"
+    case = suite.find("testcase")
+    assert case.find("error").get("message") == "unknown"
+
+
+def test_junit_reports_a_test_without_results_as_an_error():
+    t1 = Test(timeout=None)
+    t1.name = "mytestsuite"
+    results = Results([t1], {})
+    results.parse(gen_test("job", "fail", suite_name="lava"))
+
+    suite = junit_suites(results)["mytestsuite"]
+    assert suite.get("tests") == "1"
+    assert suite.get("errors") == "1"
+    assert suite.find("testcase").find("error").get("message") == "no results"
+
+
+def test_junit_names_the_downloads_by_label():
+    results = Results([], {"rootfs": "https://example.com/rootfs.ext4"})
+    results.parse(
+        '{ "lvl": "results", "msg": {"definition": "lava", "case": "http-download",'
+        ' "result": "pass", "extra": {"label": "rootfs", "sha256sum": "00"}}}'
+    )
+
+    suite = junit_suites(results)["lava"]
+    assert [c.get("name") for c in suite.findall("testcase")] == [
+        "http-download.rootfs"
+    ]
+    assert suite.get("failures") == "0"
+
+
+def test_junit_keeps_the_log_excerpt_and_duration():
+    results = Results([], {})
+    results.parse(gen_test("job", "fail", suite_name="lava"))
+    results.__data__["lava"]["job"]["log_excerpt"] = ["line one", "line <two>"]
+    results.__data__["lava"]["job"]["duration"] = "12.50"
+
+    case = junit_suites(results)["lava"].find("testcase")
+    assert case.find("system-out").text == "line one\nline <two>"
+    assert case.get("time") == "12.50"
+
+
+def test_junit_suite_time():
+    t1 = Test(timeout=None)
+    t1.name = "boot"
+    results = Results([t1], {})
+    results.parse(
+        '{ "dt": "2026-11-19T14:58:00.000000", "lvl": "info", "msg": "start"}'
+    )
+    results.parse(
+        '{ "lvl": "results", "msg": {"definition": "lava", "case": "boot",'
+        ' "result": "pass", "duration": "68.77"}}'
+    )
+    results.parse(gen_test("kernel", "pass", suite_name="1_boot"))
+    results.parse('{ "dt": "2026-11-19T15:04:30.500000", "lvl": "info", "msg": "end"}')
+
+    root = ElementTree.fromstring(results.junit())
+    suites = {s.get("name"): s for s in root.findall("testsuite")}
+    assert suites["boot"].get("time") == "68.77"
+    assert suites["lava"].get("time") == "390.50"
+    assert root.get("time") == "390.50"
+
+
+def test_junit_keeps_the_measurement():
+    t1 = Test(timeout=None)
+    t1.name = "boot"
+    results = Results([t1], {})
+    results.parse(
+        '{ "lvl": "results", "msg": {"definition": "1_boot", "case": "userspace",'
+        ' "result": "pass", "measurement": 91.673, "units": "seconds"}}'
+    )
+    results.parse(
+        '{ "lvl": "results", "msg": {"definition": "1_boot", "case": "kernel",'
+        ' "result": "pass", "measurement": 6.351}}'
+    )
+    results.__data__["boot"]["kernel"]["log_excerpt"] = ["Linux version 6.18"]
+
+    cases = {c.get("name"): c for c in junit_suites(results)["boot"]}
+    assert cases["userspace"].find("system-out").text == "91.673 seconds"
+    assert cases["kernel"].find("system-out").text == "6.351\nLinux version 6.18"
+
+
+@pytest.mark.parametrize("name", ["fail-1", "pass-1"])
+def test_junit_matches_the_json_results(name):
+    data = json.loads((BASE / "results" / (name + ".json")).read_text(encoding="utf-8"))
+    results = Results([], {})
+    results.__data__ = data
+
+    suites = junit_suites(results)
+    for suite_name, cases in data.items():
+        fails = [c for c in cases.values() if c.get("result") == "fail"]
+        assert suites[suite_name].get("failures") == str(len(fails))
+
+
+def test_junit_drops_characters_xml_can_not_hold():
+    results = Results([], {})
+    results.parse(gen_test("job", "fail", suite_name="lava"))
+    results.__data__["lava"]["job"]["log_excerpt"] = ["\x1b[0mred\x00 text"]
+
+    case = junit_suites(results)["lava"].find("testcase")
+    assert case.find("system-out").text == "[0mred text"
 
 
 def board(msg, lvl="target"):
