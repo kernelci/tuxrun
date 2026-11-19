@@ -1,0 +1,175 @@
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTRUN 1_firmware 1_2.1.2.5>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "+ lava-test-case uefi-boot --shell test -d /sys/firmware/efi"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTTC uefi-boot>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDTC uefi-boot>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=uefi-boot RESULT=pass>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "+ lava-test-case efi-variables --shell sh -c 'efivar -l | grep -q .'"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTTC efi-variables>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDTC efi-variables>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=efi-variables RESULT=pass>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "+ lava-test-case esrt --shell test -d /sys/firmware/efi/esrt/entries/entry0"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTTC esrt>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDTC esrt>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=esrt RESULT=pass>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "+ lava-test-case firmware-is-u-boot --shell sh -c 'bootctl status --no-pager | tee /dev/stderr | grep -q \"U-Boot\"'"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTTC firmware-is-u-boot>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "systemd-boot not installed in ESP."}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "System:"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "      Firmware: UEFI 2.110 (Das U-Boot 8230.256)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "results", "msg": {"case": "uefi-boot", "definition": "1_firmware", "result": "pass", "starttc": 3, "endtc": 4}}
+- {"dt": "2026-11-20T07:39:00", "lvl": "results", "msg": {"case": "efi-variables", "definition": "1_firmware", "result": "pass", "starttc": 7, "endtc": 8}}
+- {"dt": "2026-11-20T07:39:00", "lvl": "results", "msg": {"case": "esrt", "definition": "1_firmware", "result": "pass", "starttc": 11, "endtc": 12}}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": " Firmware Arch: aa64"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "   Secure Boot: enabled (user)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "  TPM2 Support: no"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "  Measured UKI: no"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "  Boot into FW: not supported"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "Current Boot Loader:"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "       Product: systemd-boot 258.1"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "     Features: + Boot counting"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Menu timeout control"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + One-shot menu timeout control"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Default entry control"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + One-shot entry control"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support for XBOOTLDR partition"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support for passing random seed to OS"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Load drop-in drivers"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support Type #1 sort-key field"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support @saved pseudo-entry"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support Type #1 devicetree field"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Enroll SecureBoot keys"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Retain SHIM protocols"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Menu can be disabled"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Multi-Profile UKIs are supported"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Loader reports network boot URL"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support Type #1 uki field"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support Type #1 uki-url field"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Loader reports TPM2 active PCR banks"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "     Partition: /dev/disk/by-partuuid/dbaebd57-8d2b-473d-b56d-25b605fd61ba"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "        Loader: `-/boot///EFI/BOOT/BOOTAA64.EFI"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": " Current Entry: uki.efi"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "Current Stub:"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "      Product: systemd-stub 258.1"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "     Features: + Stub reports loader partition information"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Stub reports stub partition information"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Stub reports network boot URL"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Picks up credentials from boot partition"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Picks up system extension images from boot partition"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Picks up configuration extension images from boot partition"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Measures kernel+command line+sysexts"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Support for passing random seed to OS"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Pick up .cmdline from addons"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Pick up .cmdline from SMBIOS Type 11"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Pick up .dtb from addons"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "               + Stub understands profile selector"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "    Partition: /dev/disk/by-partuuid/dbaebd57-8d2b-473d-b56d-25b605fd61ba"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "         Stub: `-//EFI/Linux/uki.efi"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "Random Seed:"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": " System Token: set"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "       Exists: yes"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "Available Boot Loaders on ESP:"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "          ESP: /boot (/dev/disk/by-partuuid/dbaebd57-8d2b-473d-b56d-25b605fd61ba)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "         File: `-/boot//EFI/BOOT/bootaa64.efi (systemd-boot 258.1)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "No boot loaders listed in EFI Variables."}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "Boot Loader Entry Locations:"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "          ESP: /boot (/dev/disk/by-partuuid/dbaebd57-8d2b-473d-b56d-25b605fd61ba, $BOOT)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "       config: /boot//loader/loader.conf"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "        token: poky-altcfg"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "Default Boot Loader Entry:"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "         type: Boot Loader Specification Type #2 (UKI, .efi)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "        title: Poky (Yocto Project Reference Distro) 5.3.99+snapshot-6c31c2a731858108e790acaf38679a01b0d1a035 (whinlatter)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "           id: uki.efi"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "       source: /boot//EFI/Linux/uki.efi (on the EFI System Partition)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "     sort-key: poky-altcfg"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "      version: 5.3.99+snapshot-6c31c2a731858108e790acaf38679a01b0d1a035 (whinlatter)"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "        linux: /boot//EFI/Linux/uki.efi"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "      options: rootwait root=LABEL=root"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDTC firmware-is-u-boot>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=firmware-is-u-boot RESULT=pass>"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "+ lava-test-case fwupd-devices --shell fwupdmgr get-devices"}
+- {"dt": "2026-11-20T07:39:00", "lvl": "results", "msg": {"case": "firmware-is-u-boot", "definition": "1_firmware", "result": "pass", "starttc": 15, "endtc": 94}}
+- {"dt": "2026-11-20T07:39:00", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTTC fwupd-devices>"}
+- {"dt": "2026-11-20T07:39:02", "lvl": "target", "msg": "Bluetooth: BNEP (Ethernet Emulation) ver 1.3"}
+- {"dt": "2026-11-20T07:39:02", "lvl": "target", "msg": "Bluetooth: BNEP filters: protocol multicast"}
+- {"dt": "2026-11-20T07:39:02", "lvl": "target", "msg": "Bluetooth: BNEP socket layer initialized"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "[31m[1mWARNING[0m: This package has not been validated, it may not work properly."}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "raspberrypi Raspberry Pi 4 Model B Rev 1.4"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "??File-Stor Gadget:"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?     Device ID:          f588763b933d674013b037f23fe537464754548f"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?     Summary:            SCSI device"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?     Current version:    0606"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?     Vendor:             Linux (USB:0x1D6B, SCSI:Linux)"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?     GUIDs:              71059677-7126-5be5-8707-ea82484d3a9d ? BLOCK\\VEN_1D6B&DEV_0104"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?                         281b1f7d-2201-5f2b-83df-bbf90762114a ? SCSI\\VEN_Linux   &DEV_File-Stor Gadget"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?                         92c1a67e-6588-5ade-9f1f-0eda2916121f ? SCSI\\VEN_Linux   &DEV_File-Stor Gadget&REV_0606"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?     Device Flags:       ? Can tag for emulation"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "?   "}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "??System Firmware:"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   Device ID:          4f2a13b6104f9a63fb61b9af59b3258c818a3ebb"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   Summary:            UEFI System Resource Table device (updated via NVRAM)"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   Current version:    0"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   Vendor:             raspberrypi (DMI:U-Boot)"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   Update State:       Success"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   GUID:               0dcdbbdd-ce86-5f71-8378-2d6ca8c1268c"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   Device Flags:       ? Internal device"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?                       ? Updatable"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?                       ? System requires external power source"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?                       ? Needs a reboot after installation"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?                       ? Device is usable for the duration of the update"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   Device Requests:    ? Message"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ? "}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ??Linaro LEDGE:"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?     Device ID:        6924110cde4fa051bfdc600a60620dc7aa9d3c6a"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?     Summary:          UEFI Platform Key"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?     Current version:  2021"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?     Vendor:           Unknown"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?     GUID:             e0f319c7-25f2-52b0-ad9e-c2255664e6fd ? UEFI\\CRT_9D5F332B58C71E40530F081551B83F6F9B9B8DEF"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?     Device Flags:     ? Internal device"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ?   "}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "  ??UEFI dbx:"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "        Device ID:        362301da643102b9f38477387e2193e57abaa590"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "        Summary:          UEFI revocation database f04194d3"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "        Install Duration: 1 second"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "        Update Error:     [31m[1mNo vendor ID set[0m"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "        GUID:             9cc6e935-0609-53b5-8710-616a1eb4ee28 ? UEFI\\CRT_8350F8BF7FF5318AE92FA3E067D86ABF31075E3D4B7D9631FCDE887F19B593DB&ARCH_AA64"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "        Device Flags:     ? Internal device"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "                          ? Needs a reboot after installation"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "                          ? Device is usable for the duration of the update"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "                          ? Updatable"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "                          ? Only version upgrades are allowed"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "                          ? Full disk encryption secrets may be invalidated when updating"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "                          ? Signed Payload"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "                          ? Can tag for emulation"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "      "}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDTC fwupd-devices>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=fwupd-devices RESULT=pass>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "+ lava-test-case boot-finished --shell timeout 300 systemctl is-system-running --wait"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTTC boot-finished>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "running"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDTC boot-finished>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=boot-finished RESULT=pass>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "+ systemctl --failed --no-pager"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "results", "msg": {"case": "fwupd-devices", "definition": "1_firmware", "result": "pass", "starttc": 98, "endtc": 152}}
+- {"dt": "2026-11-20T07:39:04", "lvl": "results", "msg": {"case": "boot-finished", "definition": "1_firmware", "result": "pass", "starttc": 155, "endtc": 157}}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "[4m [0m[4m [0m[4mUNIT[0m[4m [0m[4mLOAD[0m[4m [0m[4mACTIVE[0m[4m [0m[4mSUB[0m[4m [0m[4mDESCRIPTION[0m"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": ""}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "0 loaded units listed."}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "+ lava-test-case systemd-analyze --shell systemd-analyze"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_STARTTC systemd-analyze>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "Startup finished in 6.498s (firmware) + 9.820s (loader) + 6.382s (kernel) + 1min 31.605s (userspace) = 1min 54.306s "}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "multi-user.target reached after 1min 31.604s in userspace."}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDTC systemd-analyze>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=systemd-analyze RESULT=pass>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "+ set +x"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_SIGNAL_ENDRUN 1_firmware 1_2.1.2.5>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "target", "msg": "<LAVA_TEST_RUNNER EXIT>"}
+- {"dt": "2026-11-20T07:39:04", "lvl": "results", "msg": {"case": "systemd-analyze", "definition": "1_firmware", "result": "pass", "starttc": 166, "endtc": 169}}
+- {"dt": "2026-11-20T07:39:04", "lvl": "results", "msg": {"case": "1_firmware", "definition": "lava", "result": "pass"}}
