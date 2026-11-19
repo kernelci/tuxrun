@@ -11,6 +11,7 @@ import yaml
 import tuxlava.jobs  # type: ignore
 import tuxrun.__main__
 from tuxrun.__main__ import bind_docker_shell_extra_args, main, start
+from tuxrun.quiet import Quiet
 from tuxrun.runtimes import Runtime
 
 
@@ -658,6 +659,13 @@ def test_update_cache(mocker, monkeypatch, capsys):
 * Test definitions
 """
     )
+
+
+def test_quiet_reaches_the_writer(tuxrun_args, lava_run, mocker):
+    writer = mocker.patch("tuxrun.__main__.Writer", wraps=tuxrun.__main__.Writer)
+    tuxrun_args += ["--quiet"]
+    main()
+    assert isinstance(writer.call_args.kwargs["quiet"], Quiet)
 
 
 def test_save_results_json(tuxrun_args, lava_run, mocker, tmp_path):

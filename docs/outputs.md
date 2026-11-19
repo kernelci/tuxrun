@@ -11,6 +11,18 @@ to record the logs as `yaml` in a file with:
 tuxrun --device qemu-armv5 --log-file-yaml logs.yaml
 ```
 
+With `--quiet`, the log on the standard output or in `--log-file` only has the
+job actions, the downloads, where the test definitions come from, the commands
+that LAVA runs on the host with their output and exit code, the results, the
+warnings and errors, what LAVA sends to the device, and the device output. The
+commands are printed after a `$` and a failed result is printed in red. LAVA
+logs some commands without shell quotes, so check the quotes before you copy
+one into a shell:
+
+```shell
+tuxrun --device qemu-armv5 --quiet
+```
+
 TuxRun can also extract the device output and save the logs as either `html` or `text`:
 
 ```shell
