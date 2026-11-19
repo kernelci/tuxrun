@@ -13,6 +13,18 @@ from tuxrun.yaml import yaml_load
 
 LOG = logging.getLogger("tuxrun")
 PATTERN = re.compile(r"^(\d+_)")
+BOARD_LEVELS = ["target", "feedback"]
+
+
+def next_index(lines, text, start=0):
+    for index in range(start, len(lines)):
+        if text in str(lines[index].get("msg")):
+            return index
+    return None
+
+
+def excerpt_line(entry):
+    return f"[{entry.get('dt')}] {entry['msg']}"
 
 
 class Results:
@@ -27,6 +39,7 @@ class Results:
         self.__tests__ = ["lava"] + [t.name for t in tests]
         self.__ret__ = 0
         self.__log_lines__ = []
+        self.__late_signal__ = None
 
     def parse(self, line):
         try:
@@ -37,7 +50,8 @@ class Results:
         if not data or not isinstance(data, dict):
             LOG.debug(line)
             return
-        self.__log_lines__.append(data)
+        if data.get("lvl") in BOARD_LEVELS and not self.add_late_signal(data):
+            self.__log_lines__.append(data)
         if data.get("lvl") != "results":
             return
 
@@ -47,7 +61,9 @@ class Results:
             return
 
         definition = re.sub(PATTERN, "", test.pop("definition"))
-        case = re.sub(PATTERN, "", test.pop("case"))
+        raw_case = test.pop("case")
+        case = re.sub(PATTERN, "", raw_case)
+        self.__late_signal__ = None
         # download action can be duplicated
         if (
             definition == "lava"
@@ -69,38 +85,59 @@ class Results:
                 )
         else:
             self.__data__.setdefault(definition, {})[case] = test
-            self.__log_lines__.pop()
             if "starttc" in test and "endtc" in test:
-                # Search backwards for <LAVA_SIGNAL_STARTTC marker
-                excerpt = []
-                if test["starttc"] == test["endtc"]:
-                    case_id = case
-                    # Include all lines matching the LAVA_SIGNAL_TESTCASE pattern
-                    for entry in reversed(self.__log_lines__):
-                        msg = entry.get("msg", "")
-                        if (
-                            "LAVA_SIGNAL_TESTCASE" in msg
-                            and f"TEST_CASE_ID={case_id}" in msg
-                        ):
-                            excerpt.append(f"[{entry['dt']}] {msg}")
-                        if "<LAVA_SIGNAL_STARTTC" in msg:
-                            break
-                else:
-                    # Search backwards for <LAVA_SIGNAL_STARTTC marker
-                    for entry in reversed(self.__log_lines__):
-                        msg = entry.get("msg", "")
-                        excerpt.append(f"[{entry['dt']}] {msg}")
-                        if "<LAVA_SIGNAL_STARTTC" in msg:
-                            break
-
-                excerpt.reverse()
-                self.__data__[definition][case]["log_excerpt"] = excerpt
-                self.__log_lines__.clear()
+                test["log_excerpt"] = self.log_excerpt(raw_case, test)
 
         if test["result"] == "fail":
             self.__ret__ = 1
 
         return (definition, case, test)
+
+    def log_excerpt(self, case, test):
+        lines = self.__log_lines__
+        if test["starttc"] == test["endtc"]:
+            signal = f"<LAVA_SIGNAL_TESTCASE TEST_CASE_ID={case} "
+            first = last = next_index(lines, signal)
+            if first is None:
+                lines.clear()
+                # LAVA logs a line when its newline comes, that can be after the result
+                self.__late_signal__ = (signal, test)
+                return []
+        else:
+            first = next_index(lines, f"<LAVA_SIGNAL_STARTTC {case}>")
+            if first is None:
+                lines.clear()
+                return []
+            last = next_index(lines, f"<LAVA_SIGNAL_ENDTC {case}>", first)
+            if last is None:
+                next_start = next_index(lines, "<LAVA_SIGNAL_STARTTC ", first + 1)
+                last = len(lines) - 1 if next_start is None else next_start - 1
+            else:
+                self.drop_shell_signal(case, last)
+        excerpt = [excerpt_line(entry) for entry in lines[first : last + 1]]
+        # The board can already be at the next test cases, keep their lines
+        del lines[: last + 1]
+        return excerpt
+
+    def drop_shell_signal(self, case, endtc):
+        lines = self.__log_lines__
+        signal = f"<LAVA_SIGNAL_TESTCASE TEST_CASE_ID={case} "
+        index = next_index(lines, signal, endtc + 1)
+        if index is None:
+            self.__late_signal__ = (signal, None)
+        else:
+            del lines[index]
+
+    def add_late_signal(self, data):
+        if self.__late_signal__ is None:
+            return False
+        signal, test = self.__late_signal__
+        if signal not in str(data.get("msg")):
+            return False
+        if test is not None:
+            test["log_excerpt"].append(excerpt_line(data))
+        self.__late_signal__ = None
+        return True
 
     def __post_process(self):
         if self.__post_processed:
