@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 import shlex
@@ -658,6 +659,27 @@ def test_save_results_json(tuxrun_args, lava_run, mocker, tmp_path):
     tuxrun_args += [f"--results={json}"]
     main()
     assert json.read_text().strip() == "{}"
+
+
+def test_save_results_junit(tuxrun_args, lava_run, mocker, tmp_path):
+    junit = tmp_path / "junit.xml"
+    tuxrun_args += [f"--results-junit={junit}"]
+    main()
+    root = ElementTree.fromstring(junit.read_text())
+    assert root.tag == "testsuites"
+    assert root.find("testsuite").get("name") == "lava"
+
+
+def test_save_results_junit_to_stdout(
+    tuxrun_args, lava_run, capsys, monkeypatch, tmp_path
+):
+    monkeypatch.chdir(tmp_path)
+    tuxrun_args += ["--results-junit=-"]
+    main()
+    stdout, _ = capsys.readouterr()
+    xml = stdout[stdout.index("<?xml") :]
+    assert ElementTree.fromstring(xml).tag == "testsuites"
+    assert not (tmp_path / "-").exists()
 
 
 def test_timeouts(monkeypatch, run):
