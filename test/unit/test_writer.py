@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from tuxrun.quiet import Quiet
 from tuxrun.writer import Writer
 
 
@@ -177,3 +180,43 @@ hello world
         encoding="utf-8"
     ) == "\x1b[0;90m2021-04-08T18:42:25\x1b[0m <\x1b[0;33mtesting\x1b[0m> \x1b[0;33mHello, world\x1b[0m\n"
     assert (tmpdir / "logs.yaml").read_text(encoding="utf-8") == f"- {data}\n"
+
+
+def test_write_quiet(tmp_path):
+    log_file = tmp_path / "logs"
+    with Writer(log_file, None, None, None, quiet=Quiet(None)) as writer:
+        writer.write(
+            '{"lvl": "debug", "msg": "Using unzstd", "dt": "2021-04-08T18:42:25.139513"}'
+        )
+        writer.write(
+            '{"lvl": "target", "msg": "login:", "dt": "2021-04-08T18:42:26.139513"}'
+        )
+
+    log = log_file.read_text(encoding="utf-8")
+    assert "login:" in log
+    assert "Using unzstd" not in log
+
+
+def write_logs(directory, log, quiet):
+    directory.mkdir()
+    with Writer(
+        directory / "logs",
+        directory / "logs.html",
+        directory / "logs.txt",
+        directory / "logs.yaml",
+        quiet=quiet,
+    ) as writer:
+        for line in log.splitlines():
+            writer.write(line.removeprefix("- "))
+    return {
+        name: (directory / name).read_bytes()
+        for name in ["logs.html", "logs.txt", "logs.yaml"]
+    }
+
+
+def test_quiet_does_not_change_the_other_logs(tmp_path):
+    for path in sorted((Path(__file__).parent / "logs").glob("*.yaml")):
+        log = path.read_text(encoding="utf-8")
+        loud = write_logs(tmp_path / f"{path.stem}-loud", log, None)
+        quiet = write_logs(tmp_path / f"{path.stem}-quiet", log, Quiet(None))
+        assert quiet == loud, path.name

@@ -474,6 +474,12 @@ def setup_parser() -> argparse.ArgumentParser:
     )
     group.add_argument("--log-file", default=None, type=Path, help="Store logs to file")
     group.add_argument(
+        "--quiet",
+        default=False,
+        action="store_true",
+        help="Only log the job actions, downloads, test sources, host commands, results, warnings, errors, board input and board output",
+    )
+    group.add_argument(
         "--log-file-html", default=None, type=Path, help="Store logs to file as HTML"
     )
     group.add_argument(

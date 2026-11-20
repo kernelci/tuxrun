@@ -57,8 +57,9 @@ HTML_FOOTER = """</pre>
 
 
 class Writer(ContextDecorator):
-    def __init__(self, log_file, html_file, text_file, yaml_file):
+    def __init__(self, log_file, html_file, text_file, yaml_file, quiet=None):
         self.log_file = log_file
+        self.quiet = quiet
         self.html_file = html_file
         self.text_file = text_file
         self.yaml_file = yaml_file
@@ -119,13 +120,14 @@ class Writer(ContextDecorator):
             sys.stdout.write(line + "\n")
             return
 
-        if self.log_file is not None:
-            level = data["lvl"]
-            msg = data["msg"]
+        log = self.quiet(data) if self.quiet else data
+        if self.log_file is not None and log is not None:
+            level = log["lvl"]
+            msg = log["msg"]
             ns = " "
-            if level == "feedback" and "ns" in data:
-                ns = f" <{COLORS['feedback']}{data['ns']}{COLORS['end']}> "
-            timestamp = data["dt"].split(".")[0]
+            if level == "feedback" and "ns" in log:
+                ns = f" <{COLORS['feedback']}{log['ns']}{COLORS['end']}> "
+            timestamp = log["dt"].split(".")[0]
 
             if msg and level == "input" and msg[-1] == "\n":
                 msg = msg[0:-1] + "⏎"

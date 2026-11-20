@@ -26,6 +26,7 @@ sys.path.append("/usr/share/tuxlava")
 from tuxrun import templates  # noqa: E402
 from tuxrun.argparse import filter_artefacts, pathurlnone, setup_parser  # noqa: E402
 from tuxrun.assets import get_rootfs, get_test_definitions  # noqa: E402
+from tuxrun.quiet import Quiet  # noqa: E402
 from tuxrun.results import Results  # noqa: E402
 from tuxrun.runtimes import Runtime  # noqa: E402
 from tuxrun.templates import wrappers  # noqa: E402
@@ -427,6 +428,7 @@ def run(options, tmpdir: Path, cache_dir: Optional[Path], artefacts: dict) -> in
         options.log_file_html,
         options.log_file_text,
         options.log_file_yaml,
+        quiet=Quiet(job_definition) if options.quiet else None,
     ) as writer:
         # Start the runtime
         with runtime.run(args):
