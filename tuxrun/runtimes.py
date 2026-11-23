@@ -62,6 +62,9 @@ class Runtime:
     def use_host_network(self):
         pass
 
+    def skip_http_server(self):
+        pass
+
     def pull(self):
         pass
 
