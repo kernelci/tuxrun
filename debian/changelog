@@ -1,3 +1,9 @@
+tuxrun (1.12.0-1) UNRELEASED; urgency=medium
+
+  * Release 1.12.0. See: https://github.com/kernelci/tuxrun/releases/tag/v1.12.0
+
+ -- Anders Roxell <anders.roxell@linaro.org>  Tue, 24 Nov 2026 18:17:20 +0100
+
 tuxrun (1.11.0-1) UNRELEASED; urgency=medium
 
   * Release 1.11.0. See: https://github.com/kernelci/tuxrun/releases/tag/v1.11.0
